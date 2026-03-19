@@ -2823,12 +2823,15 @@ namespace Fusion.Editor {
       private int               _rootFolderIndex;
 
       private readonly string[] _rootFolders;
+      private readonly string   _searchFilter;
+      private readonly int      _searchMode;
 
       /// <summary>
       /// Creates a new instance.
       /// </summary>
       public AssetEnumerator(string root, string label, Type type) {
-        var searchFilter = MakeSearchFilter(label, type);
+        _searchFilter    = MakeSearchFilter(label, type);
+        _searchMode      = (int)SearchableEditorWindow.SearchMode.All;
         _rootFolderIndex = 0;
         if (string.IsNullOrEmpty(root)) {
           // search everywhere
@@ -2839,7 +2842,7 @@ namespace Fusion.Editor {
           _hierarchyProperty = new HierarchyProperty(root);
         }
 
-        _hierarchyProperty.SetSearchFilter(searchFilter, (int)SearchableEditorWindow.SearchMode.All);
+        _hierarchyProperty.SetSearchFilter(_searchFilter, _searchMode);
       }
 
       /// <summary>
@@ -2856,7 +2859,9 @@ namespace Fusion.Editor {
         }
 
         var newHierarchyProperty = new HierarchyProperty(_rootFolders[++_rootFolderIndex]);
-        UnityInternal.HierarchyProperty.CopySearchFilterFrom(newHierarchyProperty, _hierarchyProperty);
+        
+        // Unity 6000.x removed HierarchyProperty.CopySearchFilterFrom. Reapply the search filter explicitly.
+        newHierarchyProperty.SetSearchFilter(_searchFilter, _searchMode);
         _hierarchyProperty = newHierarchyProperty;
 
         // try again
@@ -5522,7 +5527,24 @@ namespace Fusion.Editor {
       }
 
       if (File.Exists(attribute.DefaultPath)) {
-        throw new InvalidOperationException($"Asset file already exists at '{attribute.DefaultPath}'");
+        // Asset already exists (common after partial imports / cache rebuilds). Use it instead of hard-failing.
+        var existing = (FusionGlobalScriptableObject)AssetDatabase.LoadAssetAtPath(attribute.DefaultPath, type);
+        if (existing) {
+          SetGlobal(existing);
+          EditorUtility.SetDirty(existing);
+          return existing;
+        }
+
+        // If Unity can't load it yet, try a forced import once.
+        AssetDatabase.ImportAsset(attribute.DefaultPath, ImportAssetOptions.ForceUpdate);
+        existing = (FusionGlobalScriptableObject)AssetDatabase.LoadAssetAtPath(attribute.DefaultPath, type);
+        if (existing) {
+          SetGlobal(existing);
+          EditorUtility.SetDirty(existing);
+          return existing;
+        }
+
+        throw new InvalidOperationException($"Asset file already exists at '{attribute.DefaultPath}' but could not be loaded as type '{type.Name}'.");
       }
 
       // is this a regular asset?
@@ -7454,8 +7476,24 @@ namespace Fusion.Editor {
     [UnityEditor.InitializeOnLoad]
     public static class HierarchyProperty {
       public delegate void CopySearchFilterFromDelegate(UnityEditor.HierarchyProperty to, UnityEditor.HierarchyProperty from);
-      public static CopySearchFilterFromDelegate CopySearchFilterFrom = typeof(UnityEditor.HierarchyProperty).CreateMethodDelegate<CopySearchFilterFromDelegate>(nameof(CopySearchFilterFrom), 
-        BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+      
+      // Unity 6000.x removed/changed this internal API. Older Fusion versions hard-fail here during editor load.
+      // Degrade gracefully: if the method doesn't exist, we keep a safe no-op delegate to avoid breaking the editor.
+      public static readonly CopySearchFilterFromDelegate CopySearchFilterFrom = TryCreateCopySearchFilterFrom();
+      
+      private static CopySearchFilterFromDelegate TryCreateCopySearchFilterFrom() {
+        const BindingFlags Flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+        try {
+          var method = typeof(UnityEditor.HierarchyProperty).GetMethod(nameof(CopySearchFilterFrom), Flags);
+          if (method == null) {
+            return static (_, _) => { };
+          }
+          
+          return (CopySearchFilterFromDelegate)Delegate.CreateDelegate(typeof(CopySearchFilterFromDelegate), method);
+        } catch {
+          return static (_, _) => { };
+        }
+      }
     }
     
     [UnityEditor.InitializeOnLoad]
