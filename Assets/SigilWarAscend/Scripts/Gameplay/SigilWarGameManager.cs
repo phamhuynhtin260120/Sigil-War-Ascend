@@ -220,6 +220,35 @@ namespace SigilWarAscend.Gameplay
 			NotifyCoreHolderChanged(holder);
 		}
 
+		[Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+		private void RPC_RespawnPlayer([RpcTarget] PlayerRef playerRef, Vector3 position, Vector3 rotationEuler)
+		{
+			var playerObject = Runner.GetPlayerObject(playerRef);
+			if (playerObject == null)
+				return;
+
+			var behaviours = playerObject.GetComponentsInChildren<MonoBehaviour>(true);
+			for (int i = 0; i < behaviours.Length; i++)
+			{
+				if (behaviours[i] is ISigilRespawnHandler respawnHandler)
+				{
+					respawnHandler.HandleRespawn(position, Quaternion.Euler(rotationEuler));
+					return;
+				}
+			}
+
+			var kcc = playerObject.GetComponentInChildren<SimpleKCC>();
+			if (kcc != null)
+			{
+				kcc.SetPosition(position);
+				kcc.SetLookRotation(rotationEuler);
+			}
+			else
+			{
+				playerObject.transform.SetPositionAndRotation(position, Quaternion.Euler(rotationEuler));
+			}
+		}
+
 		private void SpawnLocalPlayer()
 		{
 			var position = GetSpawnPosition(Runner.LocalPlayer);
@@ -405,29 +434,7 @@ namespace SigilWarAscend.Gameplay
 
 			Vector3 position = GetSpawnPosition(playerRef);
 			Quaternion rotation = GetSpawnRotation(playerRef);
-
-			var behaviours = playerObject.GetComponentsInChildren<MonoBehaviour>(true);
-			for (int i = 0; i < behaviours.Length; i++)
-			{
-				if (behaviours[i] is ISigilRespawnHandler respawnHandler)
-				{
-					respawnHandler.HandleRespawn(position, rotation);
-					_deadPlayers.Remove(playerRef);
-					return;
-				}
-			}
-
-			var kcc = playerObject.GetComponentInChildren<SimpleKCC>();
-			if (kcc != null)
-			{
-				kcc.SetPosition(position);
-				kcc.SetLookRotation(rotation.eulerAngles);
-			}
-			else
-			{
-				playerObject.transform.SetPositionAndRotation(position, rotation);
-			}
-
+			RPC_RespawnPlayer(playerRef, position, rotation.eulerAngles);
 			_deadPlayers.Remove(playerRef);
 		}
 
