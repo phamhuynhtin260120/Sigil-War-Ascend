@@ -17,7 +17,7 @@ namespace SigilWarAscend.UI
 		[Tooltip("Used by Fusion session properties so this game mode stays isolated from other sample rooms.")]
 		public string GameModeIdentifier = "SigilWarAscend";
 		public NetworkRunner RunnerPrefab;
-		public int MaxPlayerCount = 8;
+		public int MaxPlayerCount = 4;
 
 		[Header("Debug")]
 		[Tooltip("For local iteration in editor without shared multiplayer.")]
@@ -30,11 +30,13 @@ namespace SigilWarAscend.UI
 		public TextMeshProUGUI StatusText;
 		public GameObject StartGroup;
 		public GameObject DisconnectGroup;
+		[Tooltip("Non-UI objects that should hide/show together with the menu, such as VideoPlayer objects.")]
+		public GameObject[] AdditionalMenuObjects;
 
 		private NetworkRunner _runnerInstance;
 		private static string _shutdownStatus;
 
-		public bool IsMenuOpen => PanelGroup != null && PanelGroup.gameObject.activeSelf;
+		public bool IsMenuOpen => PanelGroup != null && PanelGroup.alpha > 0.001f && PanelGroup.blocksRaycasts;
 		public bool IsConnected => _runnerInstance != null;
 
 		public async void StartGame()
@@ -75,7 +77,7 @@ namespace SigilWarAscend.UI
 			if (startTask.Result.Ok)
 			{
 				StatusText.text = string.Empty;
-				PanelGroup.gameObject.SetActive(false);
+				SetMenuVisible(false);
 			}
 			else
 			{
@@ -99,10 +101,10 @@ namespace SigilWarAscend.UI
 			if (PanelGroup == null)
 				return;
 
-			if (PanelGroup.gameObject.activeSelf && _runnerInstance == null)
+			if (IsMenuOpen && _runnerInstance == null)
 				return;
 
-			PanelGroup.gameObject.SetActive(!PanelGroup.gameObject.activeSelf);
+			SetMenuVisible(!IsMenuOpen);
 		}
 
 		private void OnEnable()
@@ -124,6 +126,7 @@ namespace SigilWarAscend.UI
 			}
 
 			_shutdownStatus = null;
+			SetMenuVisible(true);
 		}
 
 		private void Update()
@@ -179,7 +182,7 @@ namespace SigilWarAscend.UI
 				return;
 			}
 
-			bool isPanelVisible = PanelGroup.gameObject.activeSelf;
+			bool isPanelVisible = IsMenuOpen;
 
 			if (StartGroup != null)
 			{
@@ -202,6 +205,32 @@ namespace SigilWarAscend.UI
 			}
 
 			SetCursorState(isPanelVisible == false);
+		}
+
+		private void SetMenuVisible(bool isVisible)
+		{
+			if (PanelGroup == null)
+			{
+				SetCursorState(!isVisible);
+				return;
+			}
+
+			PanelGroup.alpha = isVisible ? 1f : 0f;
+			PanelGroup.interactable = isVisible;
+			PanelGroup.blocksRaycasts = isVisible;
+
+			if (AdditionalMenuObjects != null)
+			{
+				for (int i = 0; i < AdditionalMenuObjects.Length; i++)
+				{
+					if (AdditionalMenuObjects[i] != null)
+					{
+						AdditionalMenuObjects[i].SetActive(isVisible);
+					}
+				}
+			}
+
+			SetCursorState(!isVisible);
 		}
 
 		private static void SetCursorState(bool lockCursor)

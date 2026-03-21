@@ -67,6 +67,7 @@ namespace SigilWarAscend.Gameplay
 		private int _animIDMotionSpeed;
 
 		public PlayerRef OwnerPlayerRef => Object != null ? Object.StateAuthority : PlayerRef.None;
+		private bool IsLocallyControlled => Object != null && (HasInputAuthority || HasStateAuthority);
 
 		public void HandleRespawn(Vector3 position, Quaternion rotation)
 		{
@@ -113,7 +114,7 @@ namespace SigilWarAscend.Gameplay
 
 		public override void Spawned()
 		{
-			if (HasStateAuthority)
+			if (IsLocallyControlled)
 			{
 				_gameManager = FindObjectOfType<SigilWarGameManager>();
 				Nickname = PlayerPrefs.GetString(SigilWarPlayerPrefsKeys.PlayerName);
@@ -201,7 +202,7 @@ namespace SigilWarAscend.Gameplay
 
 		private void LateUpdate()
 		{
-			if (HasStateAuthority == false)
+			if (IsLocallyControlled == false)
 				return;
 
 			if (CanProcessCamera() == false)
@@ -321,7 +322,7 @@ namespace SigilWarAscend.Gameplay
 
 		private bool CanProcessGameplayInput()
 		{
-			if (HasStateAuthority == false)
+			if (IsLocallyControlled == false)
 				return false;
 
 			if (PlayerInput == null || KCC == null || Health == null)
@@ -338,6 +339,9 @@ namespace SigilWarAscend.Gameplay
 
 		private bool CanProcessCamera()
 		{
+			if (IsLocallyControlled == false)
+				return false;
+
 			if (Health == null || Health.IsAlive == false)
 				return false;
 
@@ -403,13 +407,13 @@ namespace SigilWarAscend.Gameplay
 			if (Nameplate == null)
 				return;
 
-			if (HasStateAuthority)
+			if (IsLocallyControlled)
 			{
-				Nameplate.gameObject.SetActive(false);
+				Nameplate.enabled = false;
 				return;
 			}
 
-			Nameplate.gameObject.SetActive(true);
+			Nameplate.enabled = true;
 			Nameplate.SetNickname(Nickname);
 		}
 	}
