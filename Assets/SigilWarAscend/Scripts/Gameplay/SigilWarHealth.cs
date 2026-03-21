@@ -5,12 +5,12 @@ namespace SigilWarAscend.Gameplay
 {
 	/// <summary>
 	/// Sigil War specific health component based on the Fusion shooter sample.
-	/// It keeps death state networked so the player controller can drive respawn and win logic.
+	/// It keeps networked HP state so the player controller can drive respawn and UI health bars.
 	/// </summary>
 	public sealed class SigilWarHealth : NetworkBehaviour
 	{
 		[Header("Setup")]
-		public int InitialHealth = 3;
+		public int InitialHealth = 100;
 		public float DeathTime = 3f;
 
 		[Header("References")]
@@ -18,9 +18,12 @@ namespace SigilWarAscend.Gameplay
 		public GameObject VisualRoot;
 		public GameObject DeathRoot;
 
-		public bool IsAlive => NetworkHealth > 0;
-		public bool IsFinished => NetworkHealth <= 0 && DeathCooldown.Expired(Runner);
-
+		public int MaxHealth => InitialHealth;
+		public int CurrentHealth => NetworkHealth;
+		public float HealthNormalized => MaxHealth > 0 ? (float)CurrentHealth / MaxHealth : 0f;
+		public bool IsAlive => CurrentHealth > 0;
+		public bool IsFinished => CurrentHealth <= 0 && DeathCooldown.Expired(Runner);
+		
 		[Networked]
 		public int NetworkHealth { get; private set; }
 		[Networked]
@@ -58,7 +61,7 @@ namespace SigilWarAscend.Gameplay
 				Revive();
 			}
 
-			_lastVisibleHealth = NetworkHealth;
+			_lastVisibleHealth = CurrentHealth;
 		}
 
 		public override void Render()
@@ -73,12 +76,12 @@ namespace SigilWarAscend.Gameplay
 				DeathRoot.SetActive(IsAlive == false);
 			}
 
-			if (_lastVisibleHealth > NetworkHealth && ScalingRoot != null)
+			if (_lastVisibleHealth > CurrentHealth && ScalingRoot != null)
 			{
 				ScalingRoot.localScale = new Vector3(0.85f, 1.15f, 0.85f);
 			}
 
-			_lastVisibleHealth = NetworkHealth;
+			_lastVisibleHealth = CurrentHealth;
 		}
 
 		[Rpc(RpcSources.All, RpcTargets.StateAuthority)]

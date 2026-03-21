@@ -136,7 +136,7 @@ namespace SigilWarAscend.Gameplay
 
 			if (Health != null && Health.IsAlive && KCC != null && KCC.Position.y < FallDeathY)
 			{
-				Health.TakeHit(Health.NetworkHealth > 0 ? Health.NetworkHealth : 999, PlayerRef.None);
+				Health.TakeHit(Health.CurrentHealth > 0 ? Health.CurrentHealth : 999, PlayerRef.None);
 			}
 
 			if (HasStateAuthority && Health != null)
