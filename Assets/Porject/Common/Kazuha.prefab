@@ -7651,7 +7651,6 @@ MonoBehaviour:
   Animator: {fileID: 1485989100425549848}
   CameraPivot: {fileID: 8281856848092702033}
   CameraHandle: {fileID: 3819372986097860135}
-  ScalingRoot: {fileID: 4895520518134610429}
   Nameplate: {fileID: 7798104987626295810}
   Hitbox: {fileID: 6500312192627205639}
   WalkSpeed: 2
@@ -7764,7 +7763,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarHealth
   InitialHealth: 100
   DeathTime: 3
-  ScalingRoot: {fileID: 4895520518134610429}
   VisualRoot: {fileID: 8620505376020334195}
   DeathRoot: {fileID: 5379951624599716539}
   _NetworkHealth: 0
@@ -7778,7 +7776,7 @@ Animator:
   m_GameObject: {fileID: 5292000128188227494}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 409457e663ddd40c69b1463fac8bc2e0, type: 3}
-  m_Controller: {fileID: 9100000, guid: 40db3173a05ae3242b1c182a09b0a183, type: 2}
+  m_Controller: {fileID: 9100000, guid: b46b4152dea7d46de809324afe284eaf, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 1

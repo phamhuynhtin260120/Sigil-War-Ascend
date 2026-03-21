@@ -1576,6 +1576,7 @@ GameObject:
   - component: {fileID: 881595318}
   - component: {fileID: 881595320}
   - component: {fileID: 881595319}
+  - component: {fileID: 881595321}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1653,6 +1654,26 @@ MonoBehaviour:
   _IsCoreSpawned:
     _value: 0
   _VictoryReason: 0
+--- !u!114 &881595321
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 881595317}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 487099c6b876a4a8ab6a41f45c191303, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarLocalTestPlayerSpawner
+  GameManager: {fileID: 881595320}
+  PlayerPrefabSlots:
+  - Prefab: {fileID: 844468418994539052, guid: d3af8629cd69e4afbb0d82e9942a2c4b, type: 3}
+    UseForLocalTest: 1
+  - Prefab: {fileID: 844468418994539052, guid: c8bb9b4b1b00145a6909e1f1a9f952b1, type: 3}
+    UseForLocalTest: 0
+  LocalTestPlayerPrefabIndex: 0
+  ApplyOnAwake: 1
 --- !u!1 &945637217
 GameObject:
   m_ObjectHideFlags: 0

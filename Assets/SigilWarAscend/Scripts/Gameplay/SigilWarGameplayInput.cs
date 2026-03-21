@@ -8,5 +8,6 @@ namespace SigilWarAscend.Gameplay
 		public Vector2 MoveDirection;
 		public bool Jump;
 		public bool Sprint;
+		public bool Attack;
 	}
 }

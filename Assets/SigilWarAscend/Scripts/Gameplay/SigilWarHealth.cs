@@ -14,7 +14,6 @@ namespace SigilWarAscend.Gameplay
 		public float DeathTime = 3f;
 
 		[Header("References")]
-		public Transform ScalingRoot;
 		public GameObject VisualRoot;
 		public GameObject DeathRoot;
 
@@ -30,7 +29,6 @@ namespace SigilWarAscend.Gameplay
 		public TickTimer DeathCooldown { get; private set; }
 		[Networked]
 		public PlayerRef LastDamageDealer { get; private set; }
-		private int _lastVisibleHealth;
 
 		public void TakeHit(int damage, PlayerRef damageDealer = default)
 		{
@@ -60,8 +58,6 @@ namespace SigilWarAscend.Gameplay
 			{
 				Revive();
 			}
-
-			_lastVisibleHealth = CurrentHealth;
 		}
 
 		public override void Render()
@@ -75,13 +71,6 @@ namespace SigilWarAscend.Gameplay
 			{
 				DeathRoot.SetActive(IsAlive == false);
 			}
-
-			if (_lastVisibleHealth > CurrentHealth && ScalingRoot != null)
-			{
-				ScalingRoot.localScale = new Vector3(0.85f, 1.15f, 0.85f);
-			}
-
-			_lastVisibleHealth = CurrentHealth;
 		}
 
 		[Rpc(RpcSources.All, RpcTargets.StateAuthority)]

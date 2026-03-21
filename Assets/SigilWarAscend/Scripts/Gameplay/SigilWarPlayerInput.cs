@@ -19,6 +19,7 @@ namespace SigilWarAscend.Gameplay
 			_input.MoveDirection = default;
 			_input.Jump = false;
 			_input.Sprint = false;
+			_input.Attack = false;
 		}
 
 		private void Start()
@@ -39,6 +40,7 @@ namespace SigilWarAscend.Gameplay
 
 			_input.Jump |= Input.GetButtonDown("Jump");
 			_input.Sprint |= Input.GetButton("Sprint");
+			_input.Attack |= Input.GetButtonDown("Fire1");
 		}
 
 		private static Vector2 ClampLookRotation(Vector2 lookRotation)

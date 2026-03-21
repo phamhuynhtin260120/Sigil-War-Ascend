@@ -19,7 +19,6 @@ namespace SigilWarAscend.Gameplay
 		public Animator Animator;
 		public Transform CameraPivot;
 		public Transform CameraHandle;
-		public Transform ScalingRoot;
 		public SigilWarNameplate Nameplate;
 		public Collider Hitbox;
 
@@ -38,6 +37,17 @@ namespace SigilWarAscend.Gameplay
 		public float AirAcceleration = 25f;
 		public float AirDeceleration = 1.3f;
 
+		[Header("Attack Movement")]
+		public bool DisableAnimatorRootMotion = true;
+		public string AttackTriggerParameter = "Attack";
+		public float AttackCooldown = 0.15f;
+		public float AttackStage1Distance = 1.2f;
+		public float AttackStage1Duration = 0.12f;
+		public float AttackStage2Distance = 0.8f;
+		public float AttackStage2Duration = 0.10f;
+		public float AttackStage3Distance = 1.1f;
+		public float AttackStage3Duration = 0.14f;
+
 		[Header("Sounds")]
 		public AudioSource FootstepSound;
 		public AudioClip JumpAudioClip;
@@ -55,10 +65,25 @@ namespace SigilWarAscend.Gameplay
 		public int PlayerKills { get; set; }
 		[Networked, OnChangedRender(nameof(OnJumpingChanged))]
 		private NetworkBool IsJumping { get; set; }
+		[Networked]
+		private NetworkBool IsAttacking { get; set; }
+		[Networked]
+		private int AttackStage { get; set; }
+		[Networked]
+		private TickTimer AttackStageTimer { get; set; }
+		[Networked]
+		private TickTimer AttackCooldownTimer { get; set; }
+		[Networked]
+		private Vector3 AttackDirection { get; set; }
+		[Networked, OnChangedRender(nameof(OnAttackVisualChanged))]
+		private int AttackVisualCounter { get; set; }
 
 		private Vector3 _moveVelocity;
 		private SigilWarGameManager _gameManager;
 		private bool _deathReported;
+		private int _visibleAttackVisualCounter;
+		private int _animIDAttack;
+		private bool _hasAttackParameter;
 
 		private int _animIDSpeed;
 		private int _animIDGrounded;
@@ -89,11 +114,10 @@ namespace SigilWarAscend.Gameplay
 
 			_moveVelocity = Vector3.zero;
 			_deathReported = false;
-
-			if (ScalingRoot != null)
-			{
-				ScalingRoot.localScale = Vector3.one;
-			}
+			IsAttacking = false;
+			AttackStage = 0;
+			AttackStageTimer = default;
+			AttackCooldownTimer = default;
 		}
 
 		public void RegisterPickup()
@@ -114,6 +138,8 @@ namespace SigilWarAscend.Gameplay
 
 		public override void Spawned()
 		{
+			ConfigureAnimator();
+
 			if (IsLocallyControlled)
 			{
 				_gameManager = FindObjectOfType<SigilWarGameManager>();
@@ -126,6 +152,7 @@ namespace SigilWarAscend.Gameplay
 			}
 
 			OnNicknameChanged();
+			_visibleAttackVisualCounter = AttackVisualCounter;
 		}
 
 		public override void FixedUpdateNetwork()
@@ -143,6 +170,11 @@ namespace SigilWarAscend.Gameplay
 			if (HasStateAuthority && Health != null)
 			{
 				ProcessDeathState();
+			}
+
+			if (HasStateAuthority)
+			{
+				ProcessAttackState();
 			}
 
 			SigilWarGameplayInput input = CanProcessGameplayInput() ? PlayerInput.CurrentInput : default;
@@ -178,11 +210,6 @@ namespace SigilWarAscend.Gameplay
 				FootstepSound.pitch = KCC.RealSpeed > SprintSpeed - 1f ? 1.5f : 1f;
 			}
 
-			if (ScalingRoot != null)
-			{
-				ScalingRoot.localScale = Vector3.Lerp(ScalingRoot.localScale, Vector3.one, Time.deltaTime * 8f);
-			}
-
 			if (DustParticles != null && KCC != null)
 			{
 				var emission = DustParticles.emission;
@@ -197,6 +224,7 @@ namespace SigilWarAscend.Gameplay
 
 		private void Awake()
 		{
+			ConfigureAnimator();
 			AssignAnimationIDs();
 		}
 
@@ -250,10 +278,15 @@ namespace SigilWarAscend.Gameplay
 
 			KCC.SetGravity(KCC.RealVelocity.y >= 0f ? UpGravity : DownGravity);
 
-			float speed = input.Sprint ? SprintSpeed : WalkSpeed;
+			if (HasStateAuthority && input.Attack)
+			{
+				TryStartAttack(input);
+			}
+
+			float speed = IsAttacking ? 0f : (input.Sprint ? SprintSpeed : WalkSpeed);
 
 			var lookRotation = Quaternion.Euler(0f, input.LookRotation.y, 0f);
-			var moveDirection = lookRotation * new Vector3(input.MoveDirection.x, 0f, input.MoveDirection.y);
+			var moveDirection = IsAttacking ? Vector3.zero : lookRotation * new Vector3(input.MoveDirection.x, 0f, input.MoveDirection.y);
 			var desiredMoveVelocity = moveDirection * speed;
 
 			float acceleration;
@@ -279,7 +312,8 @@ namespace SigilWarAscend.Gameplay
 				_moveVelocity = projectedVector;
 			}
 
-			KCC.Move(_moveVelocity, jumpImpulse);
+			Vector3 attackVelocity = GetAttackVelocity();
+			KCC.Move(_moveVelocity + attackVelocity, jumpImpulse);
 		}
 
 		private void ProcessDeathState()
@@ -361,6 +395,20 @@ namespace SigilWarAscend.Gameplay
 			_animIDJump = Animator.StringToHash("Jump");
 			_animIDFreeFall = Animator.StringToHash("FreeFall");
 			_animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
+			_animIDAttack = Animator.StringToHash(AttackTriggerParameter);
+		}
+
+		private void ConfigureAnimator()
+		{
+			if (Animator == null)
+				return;
+
+			if (DisableAnimatorRootMotion)
+			{
+				Animator.applyRootMotion = false;
+			}
+
+			_hasAttackParameter = HasAnimatorParameter(AttackTriggerParameter, AnimatorControllerParameterType.Trigger);
 		}
 
 		private void OnJumpingChanged()
@@ -371,22 +419,12 @@ namespace SigilWarAscend.Gameplay
 				{
 					AudioSource.PlayClipAtPoint(JumpAudioClip, KCC.Position, 1f);
 				}
-
-				if (ScalingRoot != null)
-				{
-					ScalingRoot.localScale = new Vector3(0.5f, 1.5f, 0.5f);
-				}
 			}
 			else
 			{
 				if (LandAudioClip != null && KCC != null)
 				{
 					AudioSource.PlayClipAtPoint(LandAudioClip, KCC.Position, 1f);
-				}
-
-				if (ScalingRoot != null)
-				{
-					ScalingRoot.localScale = new Vector3(1.25f, 0.75f, 1.25f);
 				}
 			}
 		}
@@ -415,6 +453,142 @@ namespace SigilWarAscend.Gameplay
 
 			Nameplate.enabled = true;
 			Nameplate.SetNickname(Nickname);
+		}
+
+		private void TryStartAttack(SigilWarGameplayInput input)
+		{
+			if (IsAttacking)
+				return;
+
+			if (AttackCooldownTimer.IsRunning && AttackCooldownTimer.Expired(Runner) == false)
+				return;
+
+			if (Health == null || Health.IsAlive == false)
+				return;
+
+			Vector3 direction = Quaternion.Euler(0f, input.LookRotation.y, 0f) * Vector3.forward;
+			direction.y = 0f;
+			if (direction.sqrMagnitude <= 0.0001f)
+			{
+				direction = transform.forward;
+			}
+
+			AttackDirection = direction.normalized;
+			IsAttacking = true;
+			AttackStage = 1;
+			AttackStageTimer = TickTimer.CreateFromSeconds(Runner, AttackStage1Duration);
+			AttackCooldownTimer = TickTimer.CreateFromSeconds(Runner, AttackStage1Duration + AttackStage2Duration + AttackStage3Duration + AttackCooldown);
+			AttackVisualCounter++;
+
+			if (KCC != null)
+			{
+				KCC.SetLookRotation(Quaternion.LookRotation(AttackDirection).eulerAngles);
+			}
+		}
+
+		private void ProcessAttackState()
+		{
+			if (IsAttacking == false)
+				return;
+
+			if (AttackStageTimer.IsRunning == false)
+			{
+				FinishAttack();
+				return;
+			}
+
+			if (AttackStageTimer.Expired(Runner) == false)
+				return;
+
+			switch (AttackStage)
+			{
+				case 1:
+					AttackStage = 2;
+					AttackStageTimer = TickTimer.CreateFromSeconds(Runner, AttackStage2Duration);
+					AttackVisualCounter++;
+					break;
+				case 2:
+					AttackStage = 3;
+					AttackStageTimer = TickTimer.CreateFromSeconds(Runner, AttackStage3Duration);
+					AttackVisualCounter++;
+					break;
+				default:
+					FinishAttack();
+					break;
+			}
+		}
+
+		private Vector3 GetAttackVelocity()
+		{
+			if (IsAttacking == false || AttackDirection == Vector3.zero)
+				return Vector3.zero;
+
+			float duration = GetCurrentAttackStageDuration();
+			if (duration <= 0f)
+				return Vector3.zero;
+
+			float distance = GetCurrentAttackStageDistance();
+			float speed = distance / duration;
+			return AttackDirection * speed;
+		}
+
+		private float GetCurrentAttackStageDuration()
+		{
+			switch (AttackStage)
+			{
+				case 1: return AttackStage1Duration;
+				case 2: return AttackStage2Duration;
+				case 3: return AttackStage3Duration;
+				default: return 0f;
+			}
+		}
+
+		private float GetCurrentAttackStageDistance()
+		{
+			switch (AttackStage)
+			{
+				case 1: return AttackStage1Distance;
+				case 2: return AttackStage2Distance;
+				case 3: return AttackStage3Distance;
+				default: return 0f;
+			}
+		}
+
+		private void FinishAttack()
+		{
+			IsAttacking = false;
+			AttackStage = 0;
+			AttackStageTimer = default;
+		}
+
+		private void OnAttackVisualChanged()
+		{
+			if (Animator == null || _hasAttackParameter == false)
+				return;
+
+			if (_visibleAttackVisualCounter < AttackVisualCounter)
+			{
+				Animator.SetTrigger(_animIDAttack);
+			}
+
+			_visibleAttackVisualCounter = AttackVisualCounter;
+		}
+
+		private bool HasAnimatorParameter(string parameterName, AnimatorControllerParameterType expectedType)
+		{
+			if (Animator == null || string.IsNullOrEmpty(parameterName))
+				return false;
+
+			var parameters = Animator.parameters;
+			for (int i = 0; i < parameters.Length; i++)
+			{
+				if (parameters[i].name == parameterName && parameters[i].type == expectedType)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 	}
 }
