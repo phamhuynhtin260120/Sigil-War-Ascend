@@ -7664,6 +7664,15 @@ MonoBehaviour:
   GroundDeceleration: 25
   AirAcceleration: 25
   AirDeceleration: 1.3
+  DisableAnimatorRootMotion: 1
+  AttackTriggerParameter: Attack
+  AttackCooldown: 1.4
+  AttackStage1Distance: 1.2
+  AttackStage1Duration: 0.12
+  AttackStage2Distance: 0.8
+  AttackStage2Duration: 0.1
+  AttackStage3Distance: 1.1
+  AttackStage3Duration: 0.14
   FootstepSound: {fileID: 0}
   JumpAudioClip: {fileID: 0}
   LandAudioClip: {fileID: 0}
