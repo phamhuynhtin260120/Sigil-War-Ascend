@@ -40,6 +40,10 @@ namespace SigilWarAscend.Gameplay
 		[Header("Attack Movement")]
 		public bool DisableAnimatorRootMotion = true;
 		public string AttackTriggerParameter = "Attack";
+		public string AttackStage1TriggerParameter = "Attack";
+		public string AttackStage2TriggerParameter = "";
+		public string AttackStage3TriggerParameter = "";
+		public float ComboInputGraceTime = 0.2f;
 		public float AttackCooldown = 0.15f;
 		public float AttackStage1Distance = 1.2f;
 		public float AttackStage1Duration = 0.12f;
@@ -77,13 +81,15 @@ namespace SigilWarAscend.Gameplay
 		private Vector3 AttackDirection { get; set; }
 		[Networked, OnChangedRender(nameof(OnAttackVisualChanged))]
 		private int AttackVisualCounter { get; set; }
+		[Networked]
+		private int AttackVisualStage { get; set; }
+		[Networked]
+		private int QueuedAttackStage { get; set; }
 
 		private Vector3 _moveVelocity;
 		private SigilWarGameManager _gameManager;
 		private bool _deathReported;
 		private int _visibleAttackVisualCounter;
-		private int _animIDAttack;
-		private bool _hasAttackParameter;
 
 		private int _animIDSpeed;
 		private int _animIDGrounded;
@@ -118,6 +124,8 @@ namespace SigilWarAscend.Gameplay
 			AttackStage = 0;
 			AttackStageTimer = default;
 			AttackCooldownTimer = default;
+			QueuedAttackStage = 0;
+			AttackVisualStage = 0;
 		}
 
 		public void RegisterPickup()
@@ -395,7 +403,6 @@ namespace SigilWarAscend.Gameplay
 			_animIDJump = Animator.StringToHash("Jump");
 			_animIDFreeFall = Animator.StringToHash("FreeFall");
 			_animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
-			_animIDAttack = Animator.StringToHash(AttackTriggerParameter);
 		}
 
 		private void ConfigureAnimator()
@@ -407,8 +414,6 @@ namespace SigilWarAscend.Gameplay
 			{
 				Animator.applyRootMotion = false;
 			}
-
-			_hasAttackParameter = HasAnimatorParameter(AttackTriggerParameter, AnimatorControllerParameterType.Trigger);
 		}
 
 		private void OnJumpingChanged()
@@ -457,9 +462,6 @@ namespace SigilWarAscend.Gameplay
 
 		private void TryStartAttack(SigilWarGameplayInput input)
 		{
-			if (IsAttacking)
-				return;
-
 			if (AttackCooldownTimer.IsRunning && AttackCooldownTimer.Expired(Runner) == false)
 				return;
 
@@ -473,17 +475,13 @@ namespace SigilWarAscend.Gameplay
 				direction = transform.forward;
 			}
 
-			AttackDirection = direction.normalized;
-			IsAttacking = true;
-			AttackStage = 1;
-			AttackStageTimer = TickTimer.CreateFromSeconds(Runner, AttackStage1Duration);
-			AttackCooldownTimer = TickTimer.CreateFromSeconds(Runner, AttackStage1Duration + AttackStage2Duration + AttackStage3Duration + AttackCooldown);
-			AttackVisualCounter++;
-
-			if (KCC != null)
+			if (IsAttacking)
 			{
-				KCC.SetLookRotation(Quaternion.LookRotation(AttackDirection).eulerAngles);
+				TryQueueNextAttack();
+				return;
 			}
+
+			StartAttackStage(1, direction.normalized);
 		}
 
 		private void ProcessAttackState()
@@ -503,14 +501,13 @@ namespace SigilWarAscend.Gameplay
 			switch (AttackStage)
 			{
 				case 1:
-					AttackStage = 2;
-					AttackStageTimer = TickTimer.CreateFromSeconds(Runner, AttackStage2Duration);
-					AttackVisualCounter++;
+					TryAdvanceAttackStage();
 					break;
 				case 2:
-					AttackStage = 3;
-					AttackStageTimer = TickTimer.CreateFromSeconds(Runner, AttackStage3Duration);
-					AttackVisualCounter++;
+					TryAdvanceAttackStage();
+					break;
+				case 3:
+					TryAdvanceAttackStage();
 					break;
 				default:
 					FinishAttack();
@@ -534,7 +531,17 @@ namespace SigilWarAscend.Gameplay
 
 		private float GetCurrentAttackStageDuration()
 		{
-			switch (AttackStage)
+			return GetAttackStageDuration(AttackStage);
+		}
+
+		private float GetCurrentAttackStageDistance()
+		{
+			return GetAttackStageDistance(AttackStage);
+		}
+
+		private float GetAttackStageDuration(int stage)
+		{
+			switch (stage)
 			{
 				case 1: return AttackStage1Duration;
 				case 2: return AttackStage2Duration;
@@ -543,9 +550,9 @@ namespace SigilWarAscend.Gameplay
 			}
 		}
 
-		private float GetCurrentAttackStageDistance()
+		private float GetAttackStageDistance(int stage)
 		{
-			switch (AttackStage)
+			switch (stage)
 			{
 				case 1: return AttackStage1Distance;
 				case 2: return AttackStage2Distance;
@@ -559,19 +566,107 @@ namespace SigilWarAscend.Gameplay
 			IsAttacking = false;
 			AttackStage = 0;
 			AttackStageTimer = default;
+			QueuedAttackStage = 0;
+			AttackVisualStage = 0;
+		}
+
+		private void StartAttackStage(int stage, Vector3 direction)
+		{
+			float duration = GetAttackStageDuration(stage);
+			if (duration <= 0f)
+			{
+				FinishAttack();
+				return;
+			}
+
+			AttackDirection = direction.sqrMagnitude > 0.0001f ? direction.normalized : transform.forward;
+			IsAttacking = true;
+			AttackStage = stage;
+			AttackStageTimer = TickTimer.CreateFromSeconds(Runner, duration);
+			AttackVisualStage = stage;
+			QueuedAttackStage = 0;
+			AttackVisualCounter++;
+
+			if (stage == 1)
+			{
+				AttackCooldownTimer = TickTimer.CreateFromSeconds(Runner, GetTotalAttackDuration() + AttackCooldown);
+			}
+
+			if (KCC != null)
+			{
+				KCC.SetLookRotation(Quaternion.LookRotation(AttackDirection).eulerAngles);
+			}
+		}
+
+		private void TryQueueNextAttack()
+		{
+			if (CanQueueNextAttack() == false)
+				return;
+
+			int nextStage = AttackStage + 1;
+			if (GetAttackStageDuration(nextStage) <= 0f)
+				return;
+
+			QueuedAttackStage = nextStage;
+		}
+
+		private bool CanQueueNextAttack()
+		{
+			if (IsAttacking == false || AttackStage >= 3)
+				return false;
+
+			float remainingTime = AttackStageTimer.RemainingTime(Runner) ?? 0f;
+			return remainingTime <= Mathf.Max(0f, ComboInputGraceTime);
+		}
+
+		private void TryAdvanceAttackStage()
+		{
+			if (QueuedAttackStage > AttackStage && GetAttackStageDuration(QueuedAttackStage) > 0f)
+			{
+				StartAttackStage(QueuedAttackStage, AttackDirection);
+				return;
+			}
+
+			FinishAttack();
+		}
+
+		private float GetTotalAttackDuration()
+		{
+			return Mathf.Max(0f, AttackStage1Duration) +
+				Mathf.Max(0f, AttackStage2Duration) +
+				Mathf.Max(0f, AttackStage3Duration);
 		}
 
 		private void OnAttackVisualChanged()
 		{
-			if (Animator == null || _hasAttackParameter == false)
+			if (Animator == null)
 				return;
 
 			if (_visibleAttackVisualCounter < AttackVisualCounter)
 			{
-				Animator.SetTrigger(_animIDAttack);
+				string triggerParameter = GetAttackTriggerParameter(AttackVisualStage);
+				if (HasAnimatorParameter(triggerParameter, AnimatorControllerParameterType.Trigger))
+				{
+					Animator.SetTrigger(triggerParameter);
+				}
 			}
 
 			_visibleAttackVisualCounter = AttackVisualCounter;
+		}
+
+		private string GetAttackTriggerParameter(int stage)
+		{
+			switch (stage)
+			{
+				case 1:
+					return string.IsNullOrEmpty(AttackStage1TriggerParameter) ? AttackTriggerParameter : AttackStage1TriggerParameter;
+				case 2:
+					return string.IsNullOrEmpty(AttackStage2TriggerParameter) ? AttackTriggerParameter : AttackStage2TriggerParameter;
+				case 3:
+					return string.IsNullOrEmpty(AttackStage3TriggerParameter) ? AttackTriggerParameter : AttackStage3TriggerParameter;
+				default:
+					return AttackTriggerParameter;
+			}
 		}
 
 		private bool HasAnimatorParameter(string parameterName, AnimatorControllerParameterType expectedType)

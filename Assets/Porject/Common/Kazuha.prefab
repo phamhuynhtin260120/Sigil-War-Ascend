@@ -7666,13 +7666,126 @@ MonoBehaviour:
   AirDeceleration: 1.3
   DisableAnimatorRootMotion: 1
   AttackTriggerParameter: Attack
+  AttackStage1TriggerParameter: Attack1
+  AttackStage2TriggerParameter: Attack2
+  AttackStage3TriggerParameter: Attack3
+  UseAttackMotionCurves: 0
+  ComboInputGraceTime: 0.35
   AttackCooldown: 1.4
-  AttackStage1Distance: 1.2
-  AttackStage1Duration: 0.12
-  AttackStage2Distance: 0.8
-  AttackStage2Duration: 0.1
-  AttackStage3Distance: 1.1
-  AttackStage3Duration: 0.14
+  AttackStage1Distance: 0.55
+  AttackStage1Duration: 0.24
+  AttackStage2Distance: 0.32
+  AttackStage2Duration: 0.2
+  AttackStage3Distance: 0.6
+  AttackStage3Duration: 0.26
+  AttackStage1MotionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 3.2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.12
+      value: 0.22
+      inSlope: 1.8
+      outSlope: 1.8
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.35
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  AttackStage2MotionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 1
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  AttackStage3MotionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 1
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  AttackHitMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  AttackStage1Damage: 25
+  AttackStage2Damage: 30
+  AttackStage3Damage: 35
+  AttackStage1HitStartNormalized: 0.18
+  AttackStage1HitEndNormalized: 0.48
+  AttackStage2HitStartNormalized: 0.2
+  AttackStage2HitEndNormalized: 0.52
+  AttackStage3HitStartNormalized: 0.22
+  AttackStage3HitEndNormalized: 0.58
+  AttackStage1HitCenter: {x: 0, y: 1.02, z: 0.92}
+  AttackStage2HitCenter: {x: 0, y: 1.02, z: 0.98}
+  AttackStage3HitCenter: {x: 0, y: 1.04, z: 1.08}
+  AttackStage1HitRadius: 0.78
+  AttackStage2HitRadius: 0.82
+  AttackStage3HitRadius: 0.92
   FootstepSound: {fileID: 0}
   JumpAudioClip: {fileID: 0}
   LandAudioClip: {fileID: 0}
@@ -7787,7 +7900,7 @@ Animator:
   m_Avatar: {fileID: 9000000, guid: 409457e663ddd40c69b1463fac8bc2e0, type: 3}
   m_Controller: {fileID: 9100000, guid: b46b4152dea7d46de809324afe284eaf, type: 2}
   m_CullingMode: 0
-  m_UpdateMode: 0
+  m_UpdateMode: 1
   m_ApplyRootMotion: 1
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
