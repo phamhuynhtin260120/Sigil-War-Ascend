@@ -225,6 +225,7 @@ Transform:
   - {fileID: 3863286306707788198}
   - {fileID: 6469239356087022611}
   - {fileID: 4566388044031222619}
+  - {fileID: 2323029318256994985}
   m_Father: {fileID: 4393500767802313061}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &222018967234125357
@@ -7664,128 +7665,19 @@ MonoBehaviour:
   GroundDeceleration: 25
   AirAcceleration: 25
   AirDeceleration: 1.3
-  DisableAnimatorRootMotion: 1
+  UseAttackRootMotion: 1
+  LockMovementWhileAttacking: 1
+  ApplyAttackRootMotionRotation: 1
+  UseAnimatePhysicsForAnimator: 1
   AttackTriggerParameter: Attack
   AttackStage1TriggerParameter: Attack1
   AttackStage2TriggerParameter: Attack2
   AttackStage3TriggerParameter: Attack3
-  UseAttackMotionCurves: 0
-  ComboInputGraceTime: 0.35
+  AttackStage1StateName: Attack_Combo_01_01_Anim
+  AttackStage2StateName: Attack_Combo_01_02_Anim
+  AttackStage3StateName: Attack_Combo_01_03_Anim
+  ComboQueueNormalizedTime: 0.55
   AttackCooldown: 1.4
-  AttackStage1Distance: 0.55
-  AttackStage1Duration: 0.24
-  AttackStage2Distance: 0.32
-  AttackStage2Duration: 0.2
-  AttackStage3Distance: 0.6
-  AttackStage3Duration: 0.26
-  AttackStage1MotionCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 3.2
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.12
-      value: 0.22
-      inSlope: 1.8
-      outSlope: 1.8
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.35
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  AttackStage2MotionCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 1
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 1
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  AttackStage3MotionCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 1
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 1
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  AttackHitMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  AttackStage1Damage: 25
-  AttackStage2Damage: 30
-  AttackStage3Damage: 35
-  AttackStage1HitStartNormalized: 0.18
-  AttackStage1HitEndNormalized: 0.48
-  AttackStage2HitStartNormalized: 0.2
-  AttackStage2HitEndNormalized: 0.52
-  AttackStage3HitStartNormalized: 0.22
-  AttackStage3HitEndNormalized: 0.58
-  AttackStage1HitCenter: {x: 0, y: 1.02, z: 0.92}
-  AttackStage2HitCenter: {x: 0, y: 1.02, z: 0.98}
-  AttackStage3HitCenter: {x: 0, y: 1.04, z: 1.08}
-  AttackStage1HitRadius: 0.78
-  AttackStage2HitRadius: 0.82
-  AttackStage3HitRadius: 0.92
   FootstepSound: {fileID: 0}
   JumpAudioClip: {fileID: 0}
   LandAudioClip: {fileID: 0}
@@ -8681,6 +8573,38 @@ Transform:
   - {fileID: 4150919275747862517}
   m_Father: {fileID: 4015320213077726479}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5797471479487781790
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2323029318256994985}
+  m_Layer: 0
+  m_Name: SwordPosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2323029318256994985
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5797471479487781790}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.023269247, y: 0.007249364, z: 0.6432165, w: 0.76529634}
+  m_LocalPosition: {x: 0.00004, y: 0.00092, z: 0.00006}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5973678812800997033}
+  m_Father: {fileID: 3203033427735115100}
+  m_LocalEulerAnglesHint: {x: -2.576, y: -1.081, z: 80.117}
 --- !u!1 &5797958005710008257
 GameObject:
   m_ObjectHideFlags: 0
@@ -9549,6 +9473,119 @@ Transform:
   - {fileID: 6315114028109073367}
   m_Father: {fileID: 2371476844420976780}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6461844776180747283
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5973678812800997033}
+  - component: {fileID: 7298398411073050892}
+  - component: {fileID: 4804753553058442694}
+  - component: {fileID: 7298398411073050895}
+  m_Layer: 0
+  m_Name: PP_Theme_06_Sword_Two-Handed_001
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5973678812800997033
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6461844776180747283}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2323029318256994985}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &7298398411073050892
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6461844776180747283}
+  m_Mesh: {fileID: 4634054444666320730, guid: e5d1bfca5fbaea04fa93b6bf98558068, type: 3}
+--- !u!23 &4804753553058442694
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6461844776180747283}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 1ed5c689ba8eacc4c8e9d3b8ba968880, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &7298398411073050895
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6461844776180747283}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4634054444666320730, guid: e5d1bfca5fbaea04fa93b6bf98558068, type: 3}
 --- !u!1 &6479106713857697824
 GameObject:
   m_ObjectHideFlags: 0
