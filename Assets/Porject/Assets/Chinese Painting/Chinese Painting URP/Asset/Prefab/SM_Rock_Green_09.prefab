@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6587405774956300484}
   - component: {fileID: 5802500470248807327}
-  - component: {fileID: 2164225416988859779}
   m_Layer: 0
   m_Name: SM_Rock_Green_09
   m_TagString: Untagged
@@ -25,6 +24,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5852305660793696999}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -32,7 +32,6 @@ Transform:
   m_Children:
   - {fileID: 3365427374905234166}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!205 &5802500470248807327
 LODGroup:
@@ -61,24 +60,12 @@ LODGroup:
     renderers:
     - renderer: {fileID: 7379381926516493862}
   m_Enabled: 1
---- !u!65 &2164225416988859779
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5852305660793696999}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 7.9982224, y: 8.557451, z: 6.9051085}
-  m_Center: {x: 0.77249336, y: 0.12109375, z: -0.4325484}
 --- !u!1001 &2972058135329994013
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 6587405774956300484}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 480cc42d19aa1994e906e58daf4d1aff,
@@ -143,6 +130,9 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 4742473837712756890, guid: 480cc42d19aa1994e906e58daf4d1aff, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 480cc42d19aa1994e906e58daf4d1aff, type: 3}
 --- !u!23 &538645956780318910 stripped
 MeshRenderer:

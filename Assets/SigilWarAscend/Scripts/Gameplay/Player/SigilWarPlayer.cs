@@ -24,6 +24,7 @@ namespace SigilWarAscend.Gameplay
 		public Collider Hitbox;
 		public SigilWarPlayerMovement Movement;
 		public SigilWarPlayerCombat Combat;
+		public SigilWarPlayerVfx Vfx;
 
 		[Header("Sounds")]
 		public AudioSource FootstepSound;
@@ -298,6 +299,18 @@ namespace SigilWarAscend.Gameplay
 			}
 		}
 
+		// Animation Event helper. Prefer PlayCurrentAttackVfx() on the clip when VFX follows the configured stage slot.
+		public void PlayAttackVfx(int slot)
+		{
+			Vfx?.PlayAttackVfx(slot);
+		}
+
+		// Animation Event helper. Uses the current combo stage -> VFX slot mapping from combat config.
+		public void PlayCurrentAttackVfx()
+		{
+			Vfx?.PlayCurrentAttackVfx();
+		}
+
 		private void ProcessDeathState()
 		{
 			if (Health.IsAlive)
@@ -397,6 +410,20 @@ namespace SigilWarAscend.Gameplay
 				{
 					Combat = gameObject.AddComponent<SigilWarPlayerCombat>();
 				}
+			}
+
+			if (Vfx == null)
+			{
+				Vfx = GetComponent<SigilWarPlayerVfx>();
+				if (Vfx == null)
+				{
+					Vfx = gameObject.AddComponent<SigilWarPlayerVfx>();
+				}
+			}
+
+			if (Vfx != null && Vfx.Player == null)
+			{
+				Vfx.Player = this;
 			}
 		}
 

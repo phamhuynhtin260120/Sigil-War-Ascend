@@ -3,21 +3,27 @@ using UnityEngine;
 
 namespace SigilWarAscend.Gameplay
 {
+	[System.Serializable]
+	public struct SigilWarAttackStage
+	{
+		public string TriggerParameter;
+		public float Distance;
+		public float Duration;
+		public int VfxSlot;
+	}
+
 	[DisallowMultipleComponent]
 	public sealed class SigilWarPlayerCombat : MonoBehaviour
 	{
 		[Header("Attack")]
-		public string AttackStage1TriggerParameter = "Attack1";
-		public string AttackStage2TriggerParameter = "Attack2";
-		public string AttackStage3TriggerParameter = "Attack3";
+		public SigilWarAttackStage[] AttackStages =
+		{
+			new SigilWarAttackStage { TriggerParameter = "Attack1", Distance = 0.55f, Duration = 0.35f, VfxSlot = 0 },
+			new SigilWarAttackStage { TriggerParameter = "Attack2", Distance = 0.4f, Duration = 0.35f, VfxSlot = 1 },
+			new SigilWarAttackStage { TriggerParameter = "Attack3", Distance = 0.5f, Duration = 0.40f, VfxSlot = 2 },
+		};
 		public float ComboInputWindow = 0.25f;
-		public float AttackCooldown = 0.2f;
-		public float AttackStage1Distance = 0.55f;
-		public float AttackStage1Duration = 0.35f;
-		public float AttackStage2Distance = 0.4f;
-		public float AttackStage2Duration = 0.35f;
-		public float AttackStage3Distance = 0.5f;
-		public float AttackStage3Duration = 0.40f;
+		public float AttackCooldown = 0.8f;
 
 		public void ResetState(SigilWarPlayer player)
 		{
@@ -74,7 +80,7 @@ namespace SigilWarAscend.Gameplay
 			if (player.AttackStageTimerValue.Expired(player.Runner) == false)
 				return;
 
-			if (player.QueuedAttackStageValue > player.AttackStageValue && GetAttackStageDuration(player.QueuedAttackStageValue) > 0f)
+			if (player.QueuedAttackStageValue > player.AttackStageValue && GetAttackStage(player.QueuedAttackStageValue).Duration > 0f)
 			{
 				TriggerAttackStage(player, player.QueuedAttackStageValue);
 				return;
@@ -92,15 +98,16 @@ namespace SigilWarAscend.Gameplay
 			if (player.IsAttackActive == false || player.AttackDirectionValue == Vector3.zero)
 				return Vector3.zero;
 
-			float duration = GetAttackStageDuration(player.AttackStageValue);
-			if (duration <= 0f)
+			SigilWarAttackStage attackStage = GetAttackStage(player.AttackStageValue);
+			if (attackStage.Duration <= 0f || attackStage.Distance <= 0f)
 				return Vector3.zero;
 
-			float distance = GetAttackStageDistance(player.AttackStageValue);
-			if (distance <= 0f)
-				return Vector3.zero;
+			return player.AttackDirectionValue * (attackStage.Distance / attackStage.Duration);
+		}
 
-			return player.AttackDirectionValue * (distance / duration);
+		public int GetVfxSlotForStage(int stage)
+		{
+			return GetAttackStage(stage).VfxSlot;
 		}
 
 		public void ApplyVisualTrigger(SigilWarPlayer player)
@@ -110,7 +117,7 @@ namespace SigilWarAscend.Gameplay
 
 			if (player.VisibleAttackVisualCounter < player.AttackVisualCounterValue && player.Object != null && player.HasStateAuthority == false)
 			{
-				string triggerParameter = GetAttackTriggerParameter(player.AttackVisualStageValue);
+				string triggerParameter = GetAttackStage(player.AttackVisualStageValue).TriggerParameter;
 				if (HasAnimatorParameter(player, triggerParameter, AnimatorControllerParameterType.Trigger))
 				{
 					player.Animator.SetTrigger(triggerParameter);
@@ -122,7 +129,7 @@ namespace SigilWarAscend.Gameplay
 
 		private void QueueNextAttackStage(SigilWarPlayer player)
 		{
-			if (player.AttackStageValue >= 3)
+			if (player.AttackStageValue >= AttackStages.Length)
 				return;
 
 			float remainingTime = player.AttackStageTimerValue.RemainingTime(player.Runner) ?? 0f;
@@ -134,51 +141,24 @@ namespace SigilWarAscend.Gameplay
 
 		private void TriggerAttackStage(SigilWarPlayer player, int stage)
 		{
-			string triggerParameter = GetAttackTriggerParameter(stage);
-			if (player.Animator == null || HasAnimatorParameter(player, triggerParameter, AnimatorControllerParameterType.Trigger) == false)
+			SigilWarAttackStage attackStage = GetAttackStage(stage);
+			if (player.Animator == null || HasAnimatorParameter(player, attackStage.TriggerParameter, AnimatorControllerParameterType.Trigger) == false)
 				return;
 
-			player.Animator.SetTrigger(triggerParameter);
+			player.Animator.SetTrigger(attackStage.TriggerParameter);
 			player.IsAttackActive = true;
 			player.AttackStageValue = stage;
-			player.AttackStageTimerValue = TickTimer.CreateFromSeconds(player.Runner, GetAttackStageDuration(stage));
+			player.AttackStageTimerValue = TickTimer.CreateFromSeconds(player.Runner, attackStage.Duration);
 			player.AttackVisualStageValue = stage;
 			player.AttackVisualCounterValue++;
 			player.VisibleAttackVisualCounter = player.AttackVisualCounterValue;
 			player.QueuedAttackStageValue = 0;
 		}
 
-		private float GetAttackStageDuration(int stage)
+		private SigilWarAttackStage GetAttackStage(int stage)
 		{
-			switch (stage)
-			{
-				case 1: return AttackStage1Duration;
-				case 2: return AttackStage2Duration;
-				case 3: return AttackStage3Duration;
-				default: return 0f;
-			}
-		}
-
-		private float GetAttackStageDistance(int stage)
-		{
-			switch (stage)
-			{
-				case 1: return AttackStage1Distance;
-				case 2: return AttackStage2Distance;
-				case 3: return AttackStage3Distance;
-				default: return 0f;
-			}
-		}
-
-		private string GetAttackTriggerParameter(int stage)
-		{
-			switch (stage)
-			{
-				case 1: return AttackStage1TriggerParameter;
-				case 2: return AttackStage2TriggerParameter;
-				case 3: return AttackStage3TriggerParameter;
-				default: return AttackStage1TriggerParameter;
-			}
+			int index = stage - 1;
+			return index >= 0 && index < AttackStages.Length ? AttackStages[index] : default;
 		}
 
 		private static bool HasAnimatorParameter(SigilWarPlayer player, string parameterName, AnimatorControllerParameterType expectedType)

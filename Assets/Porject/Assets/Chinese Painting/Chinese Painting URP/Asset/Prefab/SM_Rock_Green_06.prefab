@@ -10,8 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6587405774956300484}
   - component: {fileID: 6301524687472274450}
-  - component: {fileID: 3435829659184116868}
-  - component: {fileID: 3931952221580880778}
   m_Layer: 0
   m_Name: SM_Rock_Green_06
   m_TagString: Untagged
@@ -26,6 +24,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5852305660793696999}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -33,7 +32,6 @@ Transform:
   m_Children:
   - {fileID: 4601782724160283492}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!205 &6301524687472274450
 LODGroup:
@@ -62,37 +60,12 @@ LODGroup:
     renderers:
     - renderer: {fileID: 2355699161234179143}
   m_Enabled: 1
---- !u!65 &3435829659184116868
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5852305660793696999}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 9.081836, y: 22.117077, z: 7.794834}
-  m_Center: {x: 2.7755532, y: 11.153357, z: 0.01231432}
---- !u!65 &3931952221580880778
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5852305660793696999}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 7.484632, y: 14.195618, z: 7.855049}
-  m_Center: {x: -3.9650047, y: 7.192627, z: 8.402508}
 --- !u!1001 &4059546999692133519
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 6587405774956300484}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: b22f8e4f3db90854aa7cda444f3291a4,
@@ -157,6 +130,9 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 4742473837712756890, guid: b22f8e4f3db90854aa7cda444f3291a4, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b22f8e4f3db90854aa7cda444f3291a4, type: 3}
 --- !u!23 &28574937596368479 stripped
 MeshRenderer:
