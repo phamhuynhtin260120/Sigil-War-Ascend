@@ -24,6 +24,8 @@ namespace SigilWarAscend.Gameplay
 		};
 		public float ComboInputWindow = 0.25f;
 		public float AttackCooldown = 0.8f;
+		[Tooltip("Delay before applying attack lunge (seconds). Prevents movement before animation starts.")]
+		public float LungeStartDelay = 0.06f;
 
 		public void ResetState(SigilWarPlayer player)
 		{
@@ -101,6 +103,14 @@ namespace SigilWarAscend.Gameplay
 			SigilWarAttackStage attackStage = GetAttackStage(player.AttackStageValue);
 			if (attackStage.Duration <= 0f || attackStage.Distance <= 0f)
 				return Vector3.zero;
+
+			if (LungeStartDelay > 0f)
+			{
+				float remainingTime = player.AttackStageTimerValue.RemainingTime(player.Runner) ?? 0f;
+				float elapsed = attackStage.Duration - remainingTime;
+				if (elapsed < LungeStartDelay)
+					return Vector3.zero;
+			}
 
 			return player.AttackDirectionValue * (attackStage.Distance / attackStage.Duration);
 		}
