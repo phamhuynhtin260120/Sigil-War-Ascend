@@ -20,21 +20,36 @@ namespace SigilWarAscend.Gameplay
 		[Header("Attack VFX")]
 		public SigilWarVfxSlot[] AttackVfxSlots;
 
-		public void PlayAttackVfx(int slot)
+		private void Awake()
+		{
+			InitializeVfxState();
+		}
+
+		public void PlayAttackVfxSlot(int slot)
 		{
 			if (slot < 0 || slot >= AttackVfxSlots.Length)
+			{
+				Debug.Log($"[SigilWarPlayerVfx] PlayAttackVfxSlot SKIP: slot={slot} invalid (range 0-{AttackVfxSlots.Length - 1}), time={Time.time:F3}");
 				return;
+			}
 
+			string slotName = AttackVfxSlots[slot].Name;
+			Debug.Log($"[SigilWarPlayerVfx] PlayAttackVfxSlot: slot={slot}, name=\"{slotName}\", time={Time.time:F3}");
 			PlaySlot(AttackVfxSlots[slot]);
 		}
 
-		// Animation Event helper when the clip should use the configured slot of the current combo stage.
-		public void PlayCurrentAttackVfx()
+		public void PlayCurrentAttackVfxSlot()
 		{
 			if (Player == null || Player.Combat == null)
+			{
+				Debug.Log($"[SigilWarPlayerVfx] PlayCurrentAttackVfxSlot SKIP: Player={Player != null}, Combat={Player?.Combat != null}, time={Time.time:F3}");
 				return;
+			}
 
-			PlayAttackVfx(Player.Combat.GetVfxSlotForStage(Player.AttackStageValue));
+			int attackStage = Player.AttackStageValue;
+			int slot = Player.Combat.GetVfxSlotForStage(attackStage);
+			Debug.Log($"[SigilWarPlayerVfx] PlayCurrentAttackVfxSlot: AttackStage={attackStage} -> slot={slot}, time={Time.time:F3}");
+			PlayAttackVfxSlot(slot);
 		}
 
 		private void Reset()
@@ -47,8 +62,51 @@ namespace SigilWarAscend.Gameplay
 			}
 		}
 
+		private void InitializeVfxState()
+		{
+			if (VfxRoot == null)
+			{
+				Transform child = transform.Find("VFX");
+				VfxRoot = child != null ? child : transform;
+			}
+
+			Debug.Log($"[SigilWarPlayerVfx] InitializeVfxState: VfxRoot={VfxRoot?.name}, slots={AttackVfxSlots?.Length ?? 0}, time={Time.time:F3}");
+
+			var particleSystems = VfxRoot.GetComponentsInChildren<ParticleSystem>(true);
+			for (int i = 0; i < particleSystems.Length; i++)
+			{
+				ParticleSystem target = particleSystems[i];
+				if (target == null)
+					continue;
+
+				var main = target.main;
+				main.playOnAwake = false;
+				target.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+			}
+
+			for (int i = 0; i < AttackVfxSlots.Length; i++)
+			{
+				SigilWarVfxSlot slot = AttackVfxSlots[i];
+				if (slot.Objects == null)
+					continue;
+
+				for (int j = 0; j < slot.Objects.Length; j++)
+				{
+					GameObject target = slot.Objects[j];
+					if (target != null)
+					{
+						target.SetActive(false);
+					}
+				}
+			}
+		}
+
 		private void PlaySlot(SigilWarVfxSlot slot)
 		{
+			int objectsCount = slot.Objects != null ? slot.Objects.Length : 0;
+			int particlesCount = slot.ParticleSystems != null ? slot.ParticleSystems.Length : 0;
+			Debug.Log($"[SigilWarPlayerVfx] PlaySlot: name=\"{slot.Name}\", objects={objectsCount}, particleSystems={particlesCount}, time={Time.time:F3}");
+
 			if (slot.Objects != null)
 			{
 				for (int i = 0; i < slot.Objects.Length; i++)

@@ -302,13 +302,13 @@ namespace SigilWarAscend.Gameplay
 		// Animation Event helper. Prefer PlayCurrentAttackVfx() on the clip when VFX follows the configured stage slot.
 		public void PlayAttackVfx(int slot)
 		{
-			Vfx?.PlayAttackVfx(slot);
+			Vfx?.PlayAttackVfxSlot(slot);
 		}
 
 		// Animation Event helper. Uses the current combo stage -> VFX slot mapping from combat config.
 		public void PlayCurrentAttackVfx()
 		{
-			Vfx?.PlayCurrentAttackVfx();
+			Vfx?.PlayCurrentAttackVfxSlot();
 		}
 
 		private void ProcessDeathState()
