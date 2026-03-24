@@ -31,6 +31,10 @@ namespace SigilWarAscend.Gameplay
 		public Portal[] Portals;
 		public CoreObjective CoreObjective;
 
+		[Header("Encounters")]
+		public EnemySpawnController EnemySpawnController;
+		public BossSpawnController BossSpawnController;
+
 		[Header("Fallback Spawn")]
 		public Transform DefaultSpawnPoint;
 
@@ -66,6 +70,7 @@ namespace SigilWarAscend.Gameplay
 
 		public override void Spawned()
 		{
+			BindSpawnControllers();
 			ApplyWorldState(force: true);
 			LogWorld($"Spawned | phase={CurrentPhase}, portalsOpen={ArePortalsOpen}, coreSpawned={IsCoreSpawned}");
 
@@ -90,6 +95,7 @@ namespace SigilWarAscend.Gameplay
 				if (CurrentPhase != MatchPhase.MatchEnded)
 				{
 					ProcessPhaseFlow();
+					ProcessEncounterSpawners();
 					EvaluateCoreVictory();
 					EvaluateLastSurvivorVictory();
 				}
@@ -263,6 +269,29 @@ namespace SigilWarAscend.Gameplay
 
 			Runner.SetPlayerObject(Runner.LocalPlayer, playerObject);
 			LogRespawn($"Spawn local player {FormatPlayer(Runner.LocalPlayer)} at {position}");
+		}
+
+		private void BindSpawnControllers()
+		{
+			if (EnemySpawnController == null)
+			{
+				EnemySpawnController = GetComponentInChildren<EnemySpawnController>(true);
+			}
+
+			if (BossSpawnController == null)
+			{
+				BossSpawnController = GetComponentInChildren<BossSpawnController>(true);
+			}
+
+			if (EnemySpawnController != null)
+			{
+				EnemySpawnController.Initialize(this);
+			}
+
+			if (BossSpawnController != null)
+			{
+				BossSpawnController.Initialize(this);
+			}
 		}
 	}
 }

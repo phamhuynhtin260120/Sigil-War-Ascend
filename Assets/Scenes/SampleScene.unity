@@ -21609,6 +21609,37 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!1 &463804350
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 463804351}
+  m_Layer: 0
+  m_Name: EnemySpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &463804351
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 463804350}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 35.4}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1913005211}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &465701683
 GameObject:
   m_ObjectHideFlags: 0
@@ -24580,6 +24611,65 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 516672217}
   m_Mesh: {fileID: -3488440485466342965, guid: a4912fa3357db72419de88076d0fccd2, type: 3}
+--- !u!1 &519608126
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 519608128}
+  - component: {fileID: 519608127}
+  m_Layer: 0
+  m_Name: EnemiesSpawnController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &519608127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519608126}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87467b2ec27758144b1b04f964b15d87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.EnemySpawnController
+  EnemyPrefab: {fileID: 6691002557539352513, guid: c6384c4eb4c29b343a0832c8dc3b287d,
+    type: 3}
+  SpawnGroups:
+  - Lane: 0
+    SpawnPoints:
+    - {fileID: 463804351}
+  SpawnsPerWavePerLane: 1
+  MaxAliveEnemies: 30
+  SpawnDuringLanePhase: 1
+  SpawnDuringPortalPhase: 1
+  SpawnDuringCorePhase: 0
+  LaneSpawnInterval: 15
+  PortalSpawnInterval: 10
+  CoreSpawnInterval: 20
+  ClearEnemiesOnMatchEnd: 1
+--- !u!4 &519608128
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519608126}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &521335128
 GameObject:
   m_ObjectHideFlags: 0
@@ -37435,6 +37525,56 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!1 &848361312
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 848361314}
+  - component: {fileID: 848361313}
+  m_Layer: 0
+  m_Name: BossSpawnController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &848361313
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 848361312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0520cde5230dd41419b31cb9853adacd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.BossSpawnController
+  BossPrefab: {fileID: 0}
+  SpawnPoints:
+  - {fileID: 0}
+  SpawnPhase: 3
+  SpawnDelayFromPhaseStart: 5
+  DespawnBossOnMatchEnd: 1
+--- !u!4 &848361314
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 848361312}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &849455526
 GameObject:
   m_ObjectHideFlags: 0
@@ -89686,6 +89826,38 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1910264768}
   m_Mesh: {fileID: 2862257108318998320, guid: fb09d99af369c644cae0ff598642f390, type: 3}
+--- !u!1 &1913005210
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1913005211}
+  m_Layer: 0
+  m_Name: SpawnPointManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1913005211
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1913005210}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 463804351}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1915213654
 GameObject:
   m_ObjectHideFlags: 0
@@ -99668,6 +99840,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 281636211756945643, guid: 7cb097e8a3961fa45b2d89ebd23272c7,
         type: 3}
+      propertyPath: BossSpawnController
+      value: 
+      objectReference: {fileID: 848361313}
+    - target: {fileID: 281636211756945643, guid: 7cb097e8a3961fa45b2d89ebd23272c7,
+        type: 3}
       propertyPath: CoreControlDuration
       value: 2
       objectReference: {fileID: 0}
@@ -99676,6 +99853,11 @@ PrefabInstance:
       propertyPath: PortalPhaseDuration
       value: 10
       objectReference: {fileID: 0}
+    - target: {fileID: 281636211756945643, guid: 7cb097e8a3961fa45b2d89ebd23272c7,
+        type: 3}
+      propertyPath: EnemySpawnController
+      value: 
+      objectReference: {fileID: 519608127}
     - target: {fileID: 281636211756945643, guid: 7cb097e8a3961fa45b2d89ebd23272c7,
         type: 3}
       propertyPath: 'Portals.Array.data[0]'
@@ -100040,3 +100222,6 @@ SceneRoots:
   - {fileID: 1397744861}
   - {fileID: 1129809172}
   - {fileID: 523520974}
+  - {fileID: 519608128}
+  - {fileID: 848361314}
+  - {fileID: 1913005211}

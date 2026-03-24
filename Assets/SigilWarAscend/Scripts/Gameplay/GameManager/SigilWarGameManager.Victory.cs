@@ -14,6 +14,7 @@ namespace SigilWarAscend.Gameplay
 			CoreControlTimer = default;
 			_pendingRespawns.Clear();
 			LogVictory($"End match | winner={FormatPlayer(winner)}, reason={reason}");
+			NotifyEncounterPhaseStarted(CurrentPhase);
 		}
 
 		private void EvaluateCoreVictory()

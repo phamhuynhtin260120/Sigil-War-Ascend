@@ -39,6 +39,7 @@ namespace SigilWarAscend.Gameplay
 			ArePortalsOpen = false;
 			IsCoreSpawned = false;
 			LogPhase($"Enter {CurrentPhase} | duration={FormatTime(PreparationDuration)}");
+			NotifyEncounterPhaseStarted(CurrentPhase);
 		}
 
 		private void StartLanePhase()
@@ -48,6 +49,7 @@ namespace SigilWarAscend.Gameplay
 			ArePortalsOpen = false;
 			IsCoreSpawned = false;
 			LogPhase($"Enter {CurrentPhase} | duration={FormatTime(LanePhaseDuration)}");
+			NotifyEncounterPhaseStarted(CurrentPhase);
 		}
 
 		private void StartPortalPhase()
@@ -56,6 +58,7 @@ namespace SigilWarAscend.Gameplay
 			PhaseTimer = TickTimer.CreateFromSeconds(Runner, PortalPhaseDuration);
 			ArePortalsOpen = true;
 			LogPhase($"Enter {CurrentPhase} | duration={FormatTime(PortalPhaseDuration)}");
+			NotifyEncounterPhaseStarted(CurrentPhase);
 		}
 
 		private void StartCorePhase()
@@ -67,6 +70,7 @@ namespace SigilWarAscend.Gameplay
 			CurrentCoreHolder = PlayerRef.None;
 			CoreControlTimer = default;
 			LogPhase($"Enter {CurrentPhase} | duration={FormatTime(CorePhaseDuration)}");
+			NotifyEncounterPhaseStarted(CurrentPhase);
 		}
 	}
 }
