@@ -62,6 +62,14 @@ namespace SigilWarAscend.Gameplay
 			Debug.Log($"{LogPrefix}[Boss] {message}", this);
 		}
 
+		internal void LogItemSpawn(string message)
+		{
+			if (EnableDebugLogs == false)
+				return;
+
+			Debug.Log($"{LogPrefix}[Item] {message}", this);
+		}
+
 		private string FormatPlayer(PlayerRef playerRef)
 		{
 			return playerRef == PlayerRef.None ? "None" : $"Player{playerRef.PlayerId}";

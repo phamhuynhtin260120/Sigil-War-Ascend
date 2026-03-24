@@ -34,6 +34,7 @@ namespace SigilWarAscend.Gameplay
 		[Header("Encounters")]
 		public EnemySpawnController EnemySpawnController;
 		public BossSpawnController BossSpawnController;
+		public ItemSpawnController ItemSpawnController;
 
 		[Header("Fallback Spawn")]
 		public Transform DefaultSpawnPoint;
@@ -283,6 +284,11 @@ namespace SigilWarAscend.Gameplay
 				BossSpawnController = GetComponentInChildren<BossSpawnController>(true);
 			}
 
+			if (ItemSpawnController == null)
+			{
+				ItemSpawnController = GetComponentInChildren<ItemSpawnController>(true);
+			}
+
 			if (EnemySpawnController != null)
 			{
 				EnemySpawnController.Initialize(this);
@@ -291,6 +297,11 @@ namespace SigilWarAscend.Gameplay
 			if (BossSpawnController != null)
 			{
 				BossSpawnController.Initialize(this);
+			}
+
+			if (ItemSpawnController != null)
+			{
+				ItemSpawnController.Initialize(this);
 			}
 		}
 	}

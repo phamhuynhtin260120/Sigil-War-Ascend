@@ -13,6 +13,11 @@ namespace SigilWarAscend.Gameplay
 			{
 				BossSpawnController.Tick(CurrentPhase);
 			}
+
+			if (ItemSpawnController != null)
+			{
+				ItemSpawnController.Tick(CurrentPhase);
+			}
 		}
 
 		private void NotifyEncounterPhaseStarted(MatchPhase phase)
@@ -25,6 +30,11 @@ namespace SigilWarAscend.Gameplay
 			if (BossSpawnController != null)
 			{
 				BossSpawnController.HandlePhaseStarted(phase);
+			}
+
+			if (ItemSpawnController != null)
+			{
+				ItemSpawnController.HandlePhaseStarted(phase);
 			}
 		}
 	}
