@@ -44,28 +44,36 @@ namespace SigilWarAscend.Gameplay
 
 			kcc.SetGravity(kcc.RealVelocity.y >= 0f ? UpGravity : DownGravity);
 
-			if (player.HasStateAuthority && input.Attack && player.Combat != null)
-			{
-				player.Combat.TryStartAttack(player, input);
-			}
-
 			float speed = input.Sprint ? SprintSpeed : WalkSpeed;
 			Quaternion lookRotation = Quaternion.Euler(0f, input.LookRotation.y, 0f);
 			Vector3 moveDirection = lookRotation * new Vector3(input.MoveDirection.x, 0f, input.MoveDirection.y);
 			Vector3 desiredMoveVelocity = moveDirection * speed;
 
+			bool canAttack = kcc.IsGrounded;
+			if (player.HasStateAuthority && input.Attack && player.Combat != null && canAttack)
+			{
+				player.Combat.TryStartAttack(player, input);
+			}
+
 			float acceleration;
+			if (player.IsAttackActive)
+			{
+				desiredMoveVelocity = Vector3.zero;
+			}
+
 			if (desiredMoveVelocity == Vector3.zero)
 			{
 				acceleration = kcc.IsGrounded ? GroundDeceleration : AirDeceleration;
 			}
 			else
 			{
-				Quaternion currentRotation = kcc.TransformRotation;
-				Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
-				Quaternion nextRotation = Quaternion.Lerp(currentRotation, targetRotation, RotationSpeed * player.Runner.DeltaTime);
-
-				kcc.SetLookRotation(nextRotation.eulerAngles);
+				if (player.IsAttackActive == false)
+				{
+					Quaternion currentRotation = kcc.TransformRotation;
+					Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+					Quaternion nextRotation = Quaternion.Lerp(currentRotation, targetRotation, RotationSpeed * player.Runner.DeltaTime);
+					kcc.SetLookRotation(nextRotation.eulerAngles);
+				}
 				acceleration = kcc.IsGrounded ? GroundAcceleration : AirAcceleration;
 			}
 

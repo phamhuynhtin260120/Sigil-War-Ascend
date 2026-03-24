@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2047702604654335190
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2343276942515268270}
+  - component: {fileID: 281636211756945643}
+  - component: {fileID: 8233979684824962329}
+  - component: {fileID: 2196772792234419611}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2343276942515268270
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2047702604654335190}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: 0, z: -0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &281636211756945643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2047702604654335190}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea71509bf26d7465293f5bd980e7d735, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarGameManager
+  PreparationDuration: 10
+  LanePhaseDuration: 120
+  PortalPhaseDuration: 90
+  CorePhaseDuration: 120
+  CoreControlDuration: 20
+  RespawnDelay: 5
+  AllowRespawnBeforeCorePhase: 1
+  AllowRespawnDuringCorePhase: 0
+  PlayerPrefab: {fileID: 844468418994539052, guid: c8bb9b4b1b00145a6909e1f1a9f952b1,
+    type: 3}
+  LaneSpawnGroups:
+  - Lane: 0
+    SpawnPoints:
+    - {fileID: 0}
+  Portals:
+  - {fileID: 0}
+  CoreObjective: {fileID: 0}
+  DefaultSpawnPoint: {fileID: 2343276942515268270}
+  _CurrentPhase: 0
+  _ArePortalsOpen:
+    _value: 0
+  _IsCoreSpawned:
+    _value: 0
+  _VictoryReason: 0
+  EnableDebugLogs: 1
+  LogPhaseFlow: 1
+  LogRespawnFlow: 1
+  LogWorldState: 1
+  LogVictoryFlow: 1
+--- !u!114 &8233979684824962329
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2047702604654335190}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
+  SortKey: 3476184445
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 281636211756945643}
+  ForceRemoteRenderTimeframe: 0
+--- !u!114 &2196772792234419611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2047702604654335190}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 487099c6b876a4a8ab6a41f45c191303, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarLocalTestPlayerSpawner
+  GameManager: {fileID: 281636211756945643}
+  PlayerPrefabSlots:
+  - Prefab: {fileID: 844468418994539052, guid: d3af8629cd69e4afbb0d82e9942a2c4b, type: 3}
+    UseForLocalTest: 1
+  - Prefab: {fileID: 844468418994539052, guid: c8bb9b4b1b00145a6909e1f1a9f952b1, type: 3}
+    UseForLocalTest: 0
+  LocalTestPlayerPrefabIndex: 0
+  ApplyOnAwake: 1

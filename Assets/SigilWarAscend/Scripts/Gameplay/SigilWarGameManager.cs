@@ -9,7 +9,7 @@ namespace SigilWarAscend.Gameplay
 	/// Match director for Sigil War: Ascend.
 	/// It owns match phases, timed world events, player spawns and win conditions.
 	/// </summary>
-	public sealed class SigilWarGameManager : NetworkBehaviour
+	public sealed partial class SigilWarGameManager : NetworkBehaviour
 	{
 		[Header("Match Durations")]
 		public float PreparationDuration = 10f;
@@ -67,6 +67,7 @@ namespace SigilWarAscend.Gameplay
 		public override void Spawned()
 		{
 			ApplyWorldState(force: true);
+			LogWorld($"Spawned | phase={CurrentPhase}, portalsOpen={ArePortalsOpen}, coreSpawned={IsCoreSpawned}");
 
 			if (PlayerPrefab != null && Runner.GetPlayerObject(Runner.LocalPlayer) == null)
 			{
@@ -148,6 +149,8 @@ namespace SigilWarAscend.Gameplay
 			if (playerRef == PlayerRef.None)
 				return;
 
+			LogRespawn($"Request respawn for {FormatPlayer(playerRef)} | authority={HasStateAuthority}");
+
 			if (HasStateAuthority)
 			{
 				ScheduleRespawn(playerRef);
@@ -170,6 +173,7 @@ namespace SigilWarAscend.Gameplay
 			}
 
 			_deadPlayers.Add(victim);
+			LogRespawn($"Player died | victim={FormatPlayer(victim)}, killer={FormatPlayer(killer)}, phase={CurrentPhase}");
 
 			if (CanRespawnInCurrentPhase())
 			{
@@ -192,6 +196,7 @@ namespace SigilWarAscend.Gameplay
 			{
 				CurrentCoreHolder = PlayerRef.None;
 				CoreControlTimer = default;
+				LogWorld("Core holder cleared");
 				return;
 			}
 
@@ -200,6 +205,7 @@ namespace SigilWarAscend.Gameplay
 
 			CurrentCoreHolder = holder;
 			CoreControlTimer = TickTimer.CreateFromSeconds(Runner, CoreControlDuration);
+			LogWorld($"Core holder set to {FormatPlayer(holder)} | controlDuration={FormatTime(CoreControlDuration)}");
 		}
 
 		[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
@@ -256,255 +262,7 @@ namespace SigilWarAscend.Gameplay
 			var playerObject = Runner.Spawn(PlayerPrefab, position, rotation, Runner.LocalPlayer);
 
 			Runner.SetPlayerObject(Runner.LocalPlayer, playerObject);
-		}
-
-		private void RefreshActivePlayers()
-		{
-			_activePlayerBuffer.Clear();
-			foreach (var playerRef in Runner.ActivePlayers)
-			{
-				_activePlayerBuffer.Add(playerRef);
-			}
-
-			for (int i = _activePlayerBuffer.Count - 1; i >= 0; i--)
-			{
-				var playerRef = _activePlayerBuffer[i];
-				if (Runner.GetPlayerObject(playerRef) == null)
-					continue;
-
-				if (_spawnCounters.ContainsKey(playerRef) == false)
-				{
-					_spawnCounters.Add(playerRef, 0);
-				}
-			}
-
-			_deadPlayers.RemoveWhere(player => _activePlayerBuffer.Contains(player) == false);
-		}
-
-		private void ProcessPhaseFlow()
-		{
-			if (PhaseTimer.IsRunning == false || PhaseTimer.Expired(Runner) == false)
-				return;
-
-			switch (CurrentPhase)
-			{
-				case MatchPhase.Preparation:
-					StartLanePhase();
-					break;
-				case MatchPhase.LanePhase:
-					StartPortalPhase();
-					break;
-				case MatchPhase.PortalPhase:
-					StartCorePhase();
-					break;
-				case MatchPhase.CorePhase:
-					EndMatch(PlayerRef.None, VictoryType.TimeOut);
-					break;
-			}
-		}
-
-		private void ProcessPendingRespawns()
-		{
-			if (_pendingRespawns.Count == 0)
-				return;
-
-			_expiredRespawnBuffer.Clear();
-			foreach (var pair in _pendingRespawns)
-			{
-				if (pair.Value.Expired(Runner))
-				{
-					_expiredRespawnBuffer.Add(pair.Key);
-				}
-			}
-
-			for (int i = 0; i < _expiredRespawnBuffer.Count; i++)
-			{
-				RespawnPlayer(_expiredRespawnBuffer[i]);
-				_pendingRespawns.Remove(_expiredRespawnBuffer[i]);
-			}
-		}
-
-		private void StartPreparationPhase()
-		{
-			CurrentPhase = MatchPhase.Preparation;
-			PhaseTimer = TickTimer.CreateFromSeconds(Runner, PreparationDuration);
-			Winner = PlayerRef.None;
-			VictoryReason = VictoryType.None;
-			CurrentCoreHolder = PlayerRef.None;
-			CoreControlTimer = default;
-			ArePortalsOpen = false;
-			IsCoreSpawned = false;
-		}
-
-		private void StartLanePhase()
-		{
-			CurrentPhase = MatchPhase.LanePhase;
-			PhaseTimer = TickTimer.CreateFromSeconds(Runner, LanePhaseDuration);
-			ArePortalsOpen = false;
-			IsCoreSpawned = false;
-		}
-
-		private void StartPortalPhase()
-		{
-			CurrentPhase = MatchPhase.PortalPhase;
-			PhaseTimer = TickTimer.CreateFromSeconds(Runner, PortalPhaseDuration);
-			ArePortalsOpen = true;
-		}
-
-		private void StartCorePhase()
-		{
-			CurrentPhase = MatchPhase.CorePhase;
-			PhaseTimer = TickTimer.CreateFromSeconds(Runner, CorePhaseDuration);
-			ArePortalsOpen = true;
-			IsCoreSpawned = true;
-			CurrentCoreHolder = PlayerRef.None;
-			CoreControlTimer = default;
-		}
-
-		private void EndMatch(PlayerRef winner, VictoryType reason)
-		{
-			CurrentPhase = MatchPhase.MatchEnded;
-			Winner = winner;
-			VictoryReason = reason;
-			PhaseTimer = default;
-			CurrentCoreHolder = PlayerRef.None;
-			CoreControlTimer = default;
-			_pendingRespawns.Clear();
-		}
-
-		private void EvaluateCoreVictory()
-		{
-			if (CurrentPhase != MatchPhase.CorePhase)
-				return;
-
-			if (CurrentCoreHolder == PlayerRef.None || CoreControlTimer.IsRunning == false)
-				return;
-
-			if (CoreControlTimer.Expired(Runner))
-			{
-				EndMatch(CurrentCoreHolder, VictoryType.CoreControl);
-			}
-		}
-
-		private void EvaluateLastSurvivorVictory()
-		{
-			if (CurrentPhase != MatchPhase.CorePhase)
-				return;
-
-			if (AllowRespawnDuringCorePhase)
-				return;
-
-			int aliveCount = 0;
-			PlayerRef alivePlayer = PlayerRef.None;
-
-			for (int i = 0; i < _activePlayerBuffer.Count; i++)
-			{
-				var playerRef = _activePlayerBuffer[i];
-				if (Runner.GetPlayerObject(playerRef) == null)
-					continue;
-
-				if (_deadPlayers.Contains(playerRef))
-					continue;
-
-				aliveCount++;
-				alivePlayer = playerRef;
-			}
-
-			if (aliveCount == 1)
-			{
-				EndMatch(alivePlayer, VictoryType.LastSurvivor);
-			}
-		}
-
-		private void ScheduleRespawn(PlayerRef playerRef)
-		{
-			if (CanRespawnInCurrentPhase() == false)
-				return;
-
-			_pendingRespawns[playerRef] = TickTimer.CreateFromSeconds(Runner, RespawnDelay);
-		}
-
-		private void RespawnPlayer(PlayerRef playerRef)
-		{
-			var playerObject = Runner.GetPlayerObject(playerRef);
-			if (playerObject == null)
-				return;
-
-			_spawnCounters[playerRef] = GetSpawnCounter(playerRef) + 1;
-
-			Vector3 position = GetSpawnPosition(playerRef);
-			Quaternion rotation = GetSpawnRotation(playerRef);
-			RPC_RespawnPlayer(playerRef, position, rotation.eulerAngles);
-			_deadPlayers.Remove(playerRef);
-		}
-
-		private LaneSpawnGroup GetLaneSpawnGroup(PlayerRef playerRef)
-		{
-			if (LaneSpawnGroups == null || LaneSpawnGroups.Length == 0)
-				return null;
-
-			LaneType lane = GetAssignedLane(playerRef);
-			for (int i = 0; i < LaneSpawnGroups.Length; i++)
-			{
-				if (LaneSpawnGroups[i] != null && LaneSpawnGroups[i].Lane == lane)
-				{
-					return LaneSpawnGroups[i];
-				}
-			}
-
-			return LaneSpawnGroups[0];
-		}
-
-		private int GetSpawnCounter(PlayerRef playerRef)
-		{
-			return _spawnCounters.TryGetValue(playerRef, out int counter) ? counter : 0;
-		}
-
-		private bool CanRespawnInCurrentPhase()
-		{
-			switch (CurrentPhase)
-			{
-				case MatchPhase.Preparation:
-				case MatchPhase.LanePhase:
-				case MatchPhase.PortalPhase:
-					return AllowRespawnBeforeCorePhase;
-				case MatchPhase.CorePhase:
-					return AllowRespawnDuringCorePhase;
-				default:
-					return false;
-			}
-		}
-
-		private void ApplyWorldState(bool force)
-		{
-			if (force || _visiblePortalState != ArePortalsOpen)
-			{
-				_visiblePortalState = ArePortalsOpen;
-				if (Portals != null)
-				{
-					for (int i = 0; i < Portals.Length; i++)
-					{
-						if (Portals[i] != null)
-						{
-							Portals[i].SetOpen(ArePortalsOpen);
-						}
-					}
-				}
-			}
-
-			if (force || _visibleCoreState != IsCoreSpawned)
-			{
-				_visibleCoreState = IsCoreSpawned;
-				if (CoreObjective != null)
-				{
-					CoreObjective.SetObjectiveActive(IsCoreSpawned);
-				}
-			}
-
-			if (force || _visiblePhase != CurrentPhase)
-			{
-				_visiblePhase = CurrentPhase;
-			}
+			LogRespawn($"Spawn local player {FormatPlayer(Runner.LocalPlayer)} at {position}");
 		}
 	}
 }

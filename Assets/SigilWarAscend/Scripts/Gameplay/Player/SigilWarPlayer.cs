@@ -311,6 +311,15 @@ namespace SigilWarAscend.Gameplay
 			Vfx?.PlayCurrentAttackVfxSlot();
 		}
 
+		// Animation Event helper. Attack stage only ends when the clip says it is finished.
+		public void CompleteCurrentAttackAnimation()
+		{
+			if (Object != null && HasStateAuthority == false)
+				return;
+
+			Combat?.CompleteCurrentAttackStage(this);
+		}
+
 		private void ProcessDeathState()
 		{
 			if (Health.IsAlive)

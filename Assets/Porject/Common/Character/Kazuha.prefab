@@ -52073,19 +52073,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarPlayerCombat
   AttackStages:
   - TriggerParameter: Attack1
-    Distance: 0.55
-    Duration: 0.35
+    AnimationDuration: 1.63
+    LungeDistance: 0.55
+    LungeStartTime: 0.1
+    LungeEndTime: 0.28
+    ComboBufferOpenTime: 0.9
+    ComboBufferCloseTime: 1.55
     VfxSlot: 0
   - TriggerParameter: Attack2
-    Distance: 0.4
-    Duration: 0.35
+    AnimationDuration: 1.88
+    LungeDistance: 0.4
+    LungeStartTime: 0.18
+    LungeEndTime: 0.4
+    ComboBufferOpenTime: 1.05
+    ComboBufferCloseTime: 1.8
     VfxSlot: 1
   - TriggerParameter: Attack3
-    Distance: 0.5
-    Duration: 0.4
+    AnimationDuration: 1.87
+    LungeDistance: 0.5
+    LungeStartTime: 0.12
+    LungeEndTime: 0.36
+    ComboBufferOpenTime: 0
+    ComboBufferCloseTime: 0
     VfxSlot: 2
-  ComboInputWindow: 0.25
-  AttackCooldown: 0.2
+  ComboResetDelay: 0
+  AttackAnimationSafetyTimeout: 1
+  EnableDebugLogs: 1
 --- !u!114 &-8412604266348383568
 MonoBehaviour:
   m_ObjectHideFlags: 0
