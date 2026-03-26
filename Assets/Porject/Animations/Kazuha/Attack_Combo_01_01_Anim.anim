@@ -467561,7 +467561,15 @@ AnimationClip:
   m_HasMotionFloatCurves: 0
   m_Events:
   - time: 0.21666667
-    functionName: PlayCurrentAttackVfx
+    functionName: PlayCurrentAttackVfxAndOpenDamageWindow
+    data: 
+    objectReferenceParameter: {fileID: 5292000128188227494, guid: d3af8629cd69e4afbb0d82e9942a2c4b,
+      type: 3}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 0.36666667
+    functionName: CloseAttackDamageWindow
     data: 
     objectReferenceParameter: {fileID: 5292000128188227494, guid: d3af8629cd69e4afbb0d82e9942a2c4b,
       type: 3}

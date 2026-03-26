@@ -7,6 +7,7 @@ namespace SigilWarAscend.Gameplay
 	public struct SigilWarAttackStage
 	{
 		public string TriggerParameter;
+		public int Damage;
 		public float AnimationDuration;
 		public float LungeDistance;
 		public float LungeStartTime;
@@ -14,6 +15,7 @@ namespace SigilWarAscend.Gameplay
 		public float ComboBufferOpenTime;
 		public float ComboBufferCloseTime;
 		public int VfxSlot;
+		public SigilWarAttackHitbox[] Hitboxes;
 	}
 
 	[DisallowMultipleComponent]
@@ -22,9 +24,9 @@ namespace SigilWarAscend.Gameplay
 		[Header("Attack")]
 		public SigilWarAttackStage[] AttackStages =
 		{
-			new SigilWarAttackStage { TriggerParameter = "Attack1", AnimationDuration = 1.63f, LungeDistance = 0.55f, LungeStartTime = 0.10f, LungeEndTime = 0.28f, ComboBufferOpenTime = 0.25f, ComboBufferCloseTime = 1.50f, VfxSlot = 0 },
-			new SigilWarAttackStage { TriggerParameter = "Attack2", AnimationDuration = 1.88f, LungeDistance = 0.40f, LungeStartTime = 0.18f, LungeEndTime = 0.40f, ComboBufferOpenTime = 0.30f, ComboBufferCloseTime = 1.75f, VfxSlot = 1 },
-			new SigilWarAttackStage { TriggerParameter = "Attack3", AnimationDuration = 1.87f, LungeDistance = 0.50f, LungeStartTime = 0.12f, LungeEndTime = 0.36f, ComboBufferOpenTime = 0f, ComboBufferCloseTime = 0f, VfxSlot = 2 },
+			new SigilWarAttackStage { TriggerParameter = "Attack1", Damage = 15, AnimationDuration = 1.63f, LungeDistance = 0.55f, LungeStartTime = 0.10f, LungeEndTime = 0.28f, ComboBufferOpenTime = 0.25f, ComboBufferCloseTime = 1.50f, VfxSlot = 0 },
+			new SigilWarAttackStage { TriggerParameter = "Attack2", Damage = 20, AnimationDuration = 1.88f, LungeDistance = 0.40f, LungeStartTime = 0.18f, LungeEndTime = 0.40f, ComboBufferOpenTime = 0.30f, ComboBufferCloseTime = 1.75f, VfxSlot = 1 },
+			new SigilWarAttackStage { TriggerParameter = "Attack3", Damage = 30, AnimationDuration = 1.87f, LungeDistance = 0.50f, LungeStartTime = 0.12f, LungeEndTime = 0.36f, ComboBufferOpenTime = 0f, ComboBufferCloseTime = 0f, VfxSlot = 2 },
 		};
 		public float ComboResetDelay = 0.8f;
 		[Tooltip("Fallback timeout if an attack animation is missing its end event.")]
@@ -32,6 +34,7 @@ namespace SigilWarAscend.Gameplay
 
 		public void ResetState(SigilWarPlayer player)
 		{
+			CloseAllDamageWindows();
 			player.IsAttackActive = false;
 			player.AttackStageValue = 0;
 			player.QueuedAttackStageValue = 0;
@@ -106,6 +109,8 @@ namespace SigilWarAscend.Gameplay
 			if (player == null || player.IsAttackActive == false)
 				return;
 
+			CloseAllDamageWindows();
+
 			if (player.QueuedAttackStageValue > player.AttackStageValue && player.QueuedAttackStageValue <= AttackStages.Length)
 			{
 				TriggerAttackStage(player, player.QueuedAttackStageValue);
@@ -132,6 +137,48 @@ namespace SigilWarAscend.Gameplay
 			player.VisibleAttackVisualCounter = player.AttackVisualCounterValue;
 		}
 
+		public void OpenCurrentDamageWindow(SigilWarPlayer player)
+		{
+			if (player == null || player.HasStateAuthority == false || player.IsAttackActive == false)
+				return;
+
+			CloseAllDamageWindows();
+
+			SigilWarAttackStage attackStage = GetAttackStage(player.AttackStageValue);
+			Debug.Log($"[SigilWarPlayerCombat] OpenDamageWindow | player={player.name}, stage={player.AttackStageValue}, trigger={attackStage.TriggerParameter}, damage={attackStage.Damage}, time={Time.time:F3}");
+			if (attackStage.Hitboxes == null)
+				return;
+
+			for (int i = 0; i < attackStage.Hitboxes.Length; i++)
+			{
+				SigilWarAttackHitbox hitbox = attackStage.Hitboxes[i];
+				if (hitbox == null)
+					continue;
+
+				hitbox.OpenWindow(player, attackStage.Damage);
+			}
+		}
+
+		public void CloseAllDamageWindows()
+		{
+			Debug.Log($"[SigilWarPlayerCombat] CloseAllDamageWindows | time={Time.time:F3}");
+			for (int i = 0; i < AttackStages.Length; i++)
+			{
+				SigilWarAttackStage attackStage = AttackStages[i];
+				if (attackStage.Hitboxes == null)
+					continue;
+
+				for (int j = 0; j < attackStage.Hitboxes.Length; j++)
+				{
+					SigilWarAttackHitbox hitbox = attackStage.Hitboxes[j];
+					if (hitbox != null)
+					{
+						hitbox.CloseWindow();
+					}
+				}
+			}
+		}
+
 		private void TriggerAttackStage(SigilWarPlayer player, int stage)
 		{
 			SigilWarAttackStage attackStage = GetAttackStage(stage);
@@ -155,6 +202,7 @@ namespace SigilWarAscend.Gameplay
 
 		private void FinishAttackStage(SigilWarPlayer player)
 		{
+			CloseAllDamageWindows();
 			player.IsAttackActive = false;
 			player.AttackStageTimerValue = default;
 			player.QueuedAttackStageValue = 0;

@@ -11,7 +11,7 @@ namespace SigilWarAscend.Gameplay
 	/// rendering hooks and high-level lifecycle events.
 	/// </summary>
 	[DisallowMultipleComponent]
-	public sealed class SigilWarPlayer : NetworkBehaviour, ISigilRespawnHandler
+	public sealed class SigilWarPlayer : NetworkBehaviour, ISigilRespawnHandler, ISigilDamageable
 	{
 		[Header("References")]
 		public SigilWarHealth Health;
@@ -71,6 +71,7 @@ namespace SigilWarAscend.Gameplay
 		private int _animIDMotionSpeed;
 
 		public PlayerRef OwnerPlayerRef => Object != null ? Object.StateAuthority : PlayerRef.None;
+		public bool IsAlive => Health != null && Health.IsAlive;
 		internal bool IsLocallyControlled => Object != null && (HasInputAuthority || HasStateAuthority);
 
 		internal bool IsAttackActive
@@ -311,12 +312,32 @@ namespace SigilWarAscend.Gameplay
 			Vfx?.PlayCurrentAttackVfxSlot();
 		}
 
+		// Animation Event helper. Use this on the exact attack impact frame to play VFX and enable damage hitboxes together.
+		public void PlayCurrentAttackVfxAndOpenDamageWindow()
+		{
+			PlayCurrentAttackVfx();
+			Combat?.OpenCurrentDamageWindow(this);
+		}
+
+		// Animation Event helper. Use this when the impact frame is separate from the VFX frame.
+		public void OpenCurrentAttackDamageWindow()
+		{
+			Combat?.OpenCurrentDamageWindow(this);
+		}
+
+		// Animation Event helper. Closes any active attack hitbox after the damage window ends.
+		public void CloseAttackDamageWindow()
+		{
+			Combat?.CloseAllDamageWindows();
+		}
+
 		// Animation Event helper. Attack stage only ends when the clip says it is finished.
 		public void CompleteCurrentAttackAnimation()
 		{
 			if (Object != null && HasStateAuthority == false)
 				return;
 
+			Combat?.CloseAllDamageWindows();
 			Combat?.CompleteCurrentAttackStage(this);
 		}
 

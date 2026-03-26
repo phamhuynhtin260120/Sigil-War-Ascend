@@ -1814,6 +1814,11 @@ GameObject:
   m_Component:
   - component: {fileID: 3124550428657686325}
   - component: {fileID: 6691002557539352513}
+  - component: {fileID: 2132606716240785490}
+  - component: {fileID: 2641980171766763569}
+  - component: {fileID: 8318150255468492932}
+  - component: {fileID: 598574446473298025}
+  - component: {fileID: 6243398520442405288}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -1835,6 +1840,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7020645125665984103}
+  - {fileID: 7752315738365618380}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6691002557539352513
@@ -1853,8 +1859,104 @@ MonoBehaviour:
   ObjectInterest: 1
   Flags: 262145
   NestedObjects: []
-  NetworkedBehaviours: []
+  NetworkedBehaviours:
+  - {fileID: 2641980171766763569}
+  - {fileID: 8318150255468492932}
+  - {fileID: 598574446473298025}
+  - {fileID: 6243398520442405288}
   ForceRemoteRenderTimeframe: 0
+--- !u!114 &2132606716240785490
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3647814465101654151}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd570a0612fe1469896f9458eb881aad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarNpcSetup
+  ActorType: 0
+  VisualRootNameHint: Body
+  HurtboxName: Hurtbox
+--- !u!114 &2641980171766763569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3647814465101654151}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkTransform
+  _stateAuthorityChangeErrorCorrectionDelta: 0.15
+  SyncScale: 0
+  SyncParent: 0
+  _autoAOIOverride: 1
+  DisableSharedModeInterpolation: 0
+--- !u!114 &8318150255468492932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3647814465101654151}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 925297ece0a72432cb76e4e673a999ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarHealth
+  InitialHealth: 10
+  DeathTime: 3
+  VisualRoot: {fileID: 4719230333926200694}
+  DeathRoot: {fileID: 0}
+  _NetworkHealth: 0
+--- !u!114 &598574446473298025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3647814465101654151}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a6b46964709d49eebb3138ae86c9a6c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarDamageableActor
+  ActorType: 0
+  DespawnWhenDeathFinished: 1
+  Health: {fileID: 8318150255468492932}
+  Hurtbox: {fileID: 1686443544872645073}
+  Animator: {fileID: 2077829054561965494}
+--- !u!114 &6243398520442405288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3647814465101654151}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e86356f30b84240e88714cffaa54265c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarMeleeNpc
+  DamageableActor: {fileID: 598574446473298025}
+  Health: {fileID: 8318150255468492932}
+  Animator: {fileID: 2077829054561965494}
+  MoveSpeed: 2.8
+  RotationSpeed: 8
+  ChaseRange: 12
+  AttackRange: 2.2
+  StopDistance: 1.4
+  AttackDamage: 12
+  AttackCooldown: 1.25
+  AttackTriggerParameter: Attack
+  SpeedParameter: Speed
+  DeadParameter: Dead
+  EnableDebugLogs: 1
 --- !u!1 &3685472007433669814
 GameObject:
   m_ObjectHideFlags: 0
@@ -3386,6 +3488,61 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1130626377652391247}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7393598306347219790
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7752315738365618380}
+  - component: {fileID: 1686443544872645073}
+  m_Layer: 0
+  m_Name: Hurtbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7752315738365618380
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7393598306347219790}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3124550428657686325}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &1686443544872645073
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7393598306347219790}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.45
+  m_Height: 1.4
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.44, z: -0.13}
 --- !u!1 &7504257550867734170
 GameObject:
   m_ObjectHideFlags: 0

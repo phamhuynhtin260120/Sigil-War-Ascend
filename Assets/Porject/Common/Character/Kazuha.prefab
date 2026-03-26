@@ -11136,6 +11136,74 @@ Transform:
   - {fileID: 8344545479319929901}
   m_Father: {fileID: 4214211657508681710}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1112375619540885741
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1275062913333184840}
+  - component: {fileID: 4610851727830866797}
+  - component: {fileID: 793286018232413391}
+  m_Layer: 0
+  m_Name: AttackHitbox_3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1275062913333184840
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1112375619540885741}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.01106, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2683488100160857168}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &4610851727830866797
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1112375619540885741}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Size: {x: 0.0019999999, y: 0.0036601853, z: 0.0010335343}
+  m_Center: {x: 4.1588427e-11, y: 0.000830094, z: -0.000058153302}
+--- !u!114 &793286018232413391
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1112375619540885741}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e426c4b5fd9ba4781810580db9b5310e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarAttackHitbox
+  Owner: {fileID: 413207081529252439}
+  Trigger: {fileID: 4610851727830866797}
 --- !u!1 &1115083842440797518
 GameObject:
   m_ObjectHideFlags: 0
@@ -13110,6 +13178,40 @@ Transform:
   m_Children:
   - {fileID: 6606971809562793847}
   m_Father: {fileID: 9063457447798590896}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2219073460670842186
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2683488100160857168}
+  m_Layer: 0
+  m_Name: AttackHitboxes
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2683488100160857168
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2219073460670842186}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 8748874694991144375}
+  - {fileID: 3034937762016888200}
+  - {fileID: 1275062913333184840}
+  m_Father: {fileID: 2323029318256994985}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2241405580931241969
 GameObject:
@@ -51840,6 +51942,7 @@ GameObject:
   - component: {fileID: 3219186102425598933}
   - component: {fileID: 1659766950939880039}
   - component: {fileID: -8412604266348383568}
+  - component: {fileID: 3255542478940822200}
   m_Layer: 0
   m_Name: Kazuha
   m_TagString: Player
@@ -52027,7 +52130,7 @@ Animator:
   m_Controller: {fileID: 9100000, guid: b46b4152dea7d46de809324afe284eaf, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 1
-  m_ApplyRootMotion: 1
+  m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_AnimatePhysics: 0
@@ -52073,6 +52176,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarPlayerCombat
   AttackStages:
   - TriggerParameter: Attack1
+    Damage: 15
     AnimationDuration: 1.63
     LungeDistance: 0.55
     LungeStartTime: 0.1
@@ -52080,7 +52184,10 @@ MonoBehaviour:
     ComboBufferOpenTime: 0.9
     ComboBufferCloseTime: 1.55
     VfxSlot: 0
+    Hitboxes:
+    - {fileID: 8624273477285688343}
   - TriggerParameter: Attack2
+    Damage: 20
     AnimationDuration: 1.88
     LungeDistance: 0.4
     LungeStartTime: 0.18
@@ -52088,7 +52195,10 @@ MonoBehaviour:
     ComboBufferOpenTime: 1.05
     ComboBufferCloseTime: 1.8
     VfxSlot: 1
+    Hitboxes:
+    - {fileID: 6365346566642720189}
   - TriggerParameter: Attack3
+    Damage: 30
     AnimationDuration: 1.87
     LungeDistance: 0.5
     LungeStartTime: 0.12
@@ -52096,9 +52206,10 @@ MonoBehaviour:
     ComboBufferOpenTime: 0
     ComboBufferCloseTime: 0
     VfxSlot: 2
+    Hitboxes:
+    - {fileID: 793286018232413391}
   ComboResetDelay: 0
   AttackAnimationSafetyTimeout: 1
-  EnableDebugLogs: 1
 --- !u!114 &-8412604266348383568
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -52129,6 +52240,31 @@ MonoBehaviour:
     - {fileID: 2753967066893900576}
     ParticleSystems:
     - {fileID: 7663878330722597740}
+--- !u!114 &3255542478940822200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5292000128188227494}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e0e496c53c6f402f81320a1fd1b7d75, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarAttackHitboxSetup
+  Player: {fileID: 413207081529252439}
+  Combat: {fileID: 1659766950939880039}
+  PreferredParent: {fileID: 2323029318256994985}
+  PreferredParentName: SwordPosition
+  BaseLocalEulerAngles: {x: 0, y: 0, z: 0}
+  LocalPositions:
+  - {x: 0, y: 0, z: 0.25}
+  - {x: 0, y: 0, z: 0.55}
+  - {x: 0, y: 0, z: 0.85}
+  BoxSizes:
+  - {x: 0.2, y: 0.2, z: 0.45}
+  - {x: 0.22, y: 0.22, z: 0.5}
+  - {x: 0.24, y: 0.24, z: 0.55}
 --- !u!1 &5312854568305535827
 GameObject:
   m_ObjectHideFlags: 0
@@ -62742,6 +62878,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5973678812800997033}
+  - {fileID: 2683488100160857168}
   m_Father: {fileID: 3203033427735115100}
   m_LocalEulerAnglesHint: {x: -2.576, y: -1.081, z: 80.117}
 --- !u!1 &5797958005710008257
@@ -108048,6 +108185,74 @@ Transform:
   - {fileID: 6272970847261549496}
   m_Father: {fileID: 4083485388290770085}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6541385237317703472
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8748874694991144375}
+  - component: {fileID: 2062762945780401291}
+  - component: {fileID: 8624273477285688343}
+  m_Layer: 0
+  m_Name: AttackHitbox_1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8748874694991144375
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6541385237317703472}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2683488100160857168}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &2062762945780401291
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6541385237317703472}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Size: {x: 0.002, y: 0.004, z: 0.002}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8624273477285688343
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6541385237317703472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e426c4b5fd9ba4781810580db9b5310e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarAttackHitbox
+  Owner: {fileID: 413207081529252439}
+  Trigger: {fileID: 2062762945780401291}
 --- !u!1 &6652452853571650601
 GameObject:
   m_ObjectHideFlags: 0
@@ -108112,6 +108317,74 @@ Transform:
   - {fileID: 8315931790908539051}
   m_Father: {fileID: 3939271857436866082}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6696734058113835823
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3034937762016888200}
+  - component: {fileID: 3783416882666570744}
+  - component: {fileID: 6365346566642720189}
+  m_Layer: 0
+  m_Name: AttackHitbox_2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3034937762016888200
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6696734058113835823}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: 0.00346, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2683488100160857168}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &3783416882666570744
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6696734058113835823}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Size: {x: 0.0019999999, y: 0.007726765, z: 0.002}
+  m_Center: {x: 0.0000000010341422, y: 0.002863382, z: 3.890325e-10}
+--- !u!114 &6365346566642720189
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6696734058113835823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e426c4b5fd9ba4781810580db9b5310e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarAttackHitbox
+  Owner: {fileID: 413207081529252439}
+  Trigger: {fileID: 3783416882666570744}
 --- !u!1 &6747591527523166253
 GameObject:
   m_ObjectHideFlags: 0
