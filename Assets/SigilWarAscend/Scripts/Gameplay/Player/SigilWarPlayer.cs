@@ -69,6 +69,7 @@ namespace SigilWarAscend.Gameplay
 		private int _animIDJump;
 		private int _animIDFreeFall;
 		private int _animIDMotionSpeed;
+		private int _animIDDead;
 
 		public PlayerRef OwnerPlayerRef => Object != null ? Object.StateAuthority : PlayerRef.None;
 		public bool IsAlive => Health != null && Health.IsAlive;
@@ -205,6 +206,7 @@ namespace SigilWarAscend.Gameplay
 				Animator.SetBool(_animIDJump, IsJumping);
 				Animator.SetBool(_animIDGrounded, KCC.IsGrounded);
 				Animator.SetBool(_animIDFreeFall, KCC.RealVelocity.y < -10f);
+				Animator.SetBool(_animIDDead, Health != null && Health.IsAlive == false);
 			}
 
 			if (FootstepSound != null && KCC != null)
@@ -420,6 +422,7 @@ namespace SigilWarAscend.Gameplay
 			_animIDJump = Animator.StringToHash("Jump");
 			_animIDFreeFall = Animator.StringToHash("FreeFall");
 			_animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
+			_animIDDead = Animator.StringToHash("Dead");
 		}
 
 		private void EnsurePlayerComponents()

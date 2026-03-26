@@ -17,6 +17,16 @@ namespace SigilWarAscend.Gameplay
 		public GameObject VisualRoot;
 		public GameObject DeathRoot;
 
+		[Header("Presentation")]
+		public bool HideVisualRootWhenDead;
+
+		[Header("Debug")]
+		public bool EnableDebugLogs;
+		public bool LogDamageFlow = true;
+		public bool LogLifecycleFlow = true;
+
+		private const string LogPrefix = "[SigilWarHealth]";
+
 		public int MaxHealth => InitialHealth;
 		public int CurrentHealth => NetworkHealth;
 		public float HealthNormalized => MaxHealth > 0 ? (float)CurrentHealth / MaxHealth : 0f;
@@ -50,6 +60,7 @@ namespace SigilWarAscend.Gameplay
 			NetworkHealth = InitialHealth;
 			DeathCooldown = default;
 			LastDamageDealer = PlayerRef.None;
+			LogLifecycle($"{gameObject.name} | Revive | HP={NetworkHealth}/{InitialHealth}");
 		}
 
 		public override void Spawned()
@@ -64,7 +75,7 @@ namespace SigilWarAscend.Gameplay
 		{
 			if (VisualRoot != null)
 			{
-				VisualRoot.SetActive(IsAlive);
+				VisualRoot.SetActive(IsAlive || HideVisualRootWhenDead == false);
 			}
 
 			if (DeathRoot != null)
@@ -84,6 +95,7 @@ namespace SigilWarAscend.Gameplay
 			if (IsAlive == false)
 				return;
 
+			int healthBefore = NetworkHealth;
 			NetworkHealth = Mathf.Max(0, NetworkHealth - damage);
 
 			if (damageDealer != PlayerRef.None)
@@ -91,10 +103,37 @@ namespace SigilWarAscend.Gameplay
 				LastDamageDealer = damageDealer;
 			}
 
+			LogDamage(
+				$"{gameObject.name} | Damage={damage} dealer={FormatPlayerRef(damageDealer)} | HP {healthBefore}→{NetworkHealth} | " +
+				$"authority={HasStateAuthority}");
+
 			if (NetworkHealth == 0)
 			{
 				DeathCooldown = TickTimer.CreateFromSeconds(Runner, DeathTime);
+				LogLifecycle(
+					$"{gameObject.name} | Death | DeathTime={DeathTime:F2}s | lastDealer={FormatPlayerRef(LastDamageDealer)}");
 			}
+		}
+
+		private void LogDamage(string message)
+		{
+			if (EnableDebugLogs == false || LogDamageFlow == false)
+				return;
+
+			Debug.Log($"{LogPrefix}[Damage] {message}", this);
+		}
+
+		private void LogLifecycle(string message)
+		{
+			if (EnableDebugLogs == false || LogLifecycleFlow == false)
+				return;
+
+			Debug.Log($"{LogPrefix}[Lifecycle] {message}", this);
+		}
+
+		private static string FormatPlayerRef(PlayerRef playerRef)
+		{
+			return playerRef == PlayerRef.None ? "None" : $"Player{playerRef.PlayerId}";
 		}
 	}
 }
