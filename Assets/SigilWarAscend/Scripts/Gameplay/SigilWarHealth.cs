@@ -73,6 +73,11 @@ namespace SigilWarAscend.Gameplay
 
 		public override void Render()
 		{
+			RefreshPresentation();
+		}
+
+		public void RefreshPresentation()
+		{
 			if (VisualRoot != null)
 			{
 				VisualRoot.SetActive(IsAlive || HideVisualRootWhenDead == false);

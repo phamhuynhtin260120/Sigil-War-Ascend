@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c36c4cf462a5488bab2ed66af9521f31, type: 3}
+  m_Name: SigilWarGameplayTextConfig
+  m_EditorClassIdentifier: 
+  ReadyUpTitle: Huong Dan Truoc Khi Vao Tran
+  ReadyUpInstructions: "LUAT CHOI SIGIL WAR ASCEND\n\n1. Giai doan San sang:\n- Tat ca nguoi choi doc huong dan va bam 'Da hieu / San sang'.\n- Truoc khi tat ca cung san sang, nguoi choi khong the dieu khien nhan vat.\n\n2. Preparation Phase:\n- Tran dau bat dau dem nguoc.\n- Giai doan nay duoc phep respawn.\n\n3. Lane Phase:\n- Nguoi choi di chuyen, tan cong va tranh chap khu vuc.\n- Quai thuong xuat hien theo lane.\n- Giai doan nay duoc phep respawn.\n\n4. Portal Phase:\n- Portal mo, boss va cac doi tuong tranh chap bat dau xuat hien.\n- Nguoi choi van co the giao tranh va tiep tuc chiem uu the.\n- Giai doan nay duoc phep respawn.\n\n5. Core Phase:\n- Core xuat hien. Nguoi nao giu Core du thoi gian quy dinh se thang.\n- Giai doan nay khong duoc respawn.\n- Neu bi ha guc trong giai doan nay, ban bi loai khoi tran.\n\n6. Dieu kien thang:\n- Giu Core du thoi gian.\n- Hoac tro thanh nguoi song sot cuoi cung.\n\nDIEU KHIEN:\nWASD di chuyen | Shift chay | Space nhay | Chuot trai tan cong | ESC tam dung"
+  ReadyUpWaitingStatus: Dang cho nguoi choi san sang...
+  ReadyUpProgressFormat: 'San sang: {0}/{1}'
+  ReadyUpConfirmLabel: Da hieu / San sang
+  ReadyUpConfirmedLabel: Ban da san sang
+  EliminationTitle: Ban da bi loai khoi tran
+  EliminationBody: Giai doan hien tai khong cho phep hoi sinh. Ban co the roi tran va quay ve phong tao room de bat dau lai.
+  ReturnToRoomLabel: Quay ve phong tao room
+  SplashTitle: SIGIL WAR ASCEND
+  SplashBody: "Final Project Prototype\nMultiplayer arena battle with phase-based objectives.\n\nTip: update this splash with your team name, logo, and class section before final submission."
+  SplashHint: Press any key to continue
+  TutorialButtonLabel: Tutorial
+  TutorialPanelTitle: How To Play
+  CreditsButtonLabel: Credits
+  CreditsPanelTitle: Credits
+  CreditsPanelBody: "Sigil War Ascend\nFinal project prototype\n\nSuggested final credits format:\n- Team name\n- Member 1: Programming\n- Member 2: Level Design\n- Member 3: UI and Audio\n- Asset acknowledgements\n\nReplace this text with your real team information before submission."

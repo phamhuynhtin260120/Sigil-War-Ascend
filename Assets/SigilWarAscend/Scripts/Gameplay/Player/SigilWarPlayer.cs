@@ -263,9 +263,12 @@ namespace SigilWarAscend.Gameplay
 
 		public void HandleRespawn(Vector3 position, Quaternion rotation)
 		{
+			EnsurePlayerComponents();
+
 			if (Health != null)
 			{
 				Health.Revive();
+				Health.RefreshPresentation();
 			}
 
 			if (KCC != null)
@@ -281,6 +284,7 @@ namespace SigilWarAscend.Gameplay
 
 			Movement?.ResetState();
 			Combat?.ResetState(this);
+			ResetPresentationStateOnRespawn();
 			_deathReported = false;
 		}
 
@@ -511,6 +515,51 @@ namespace SigilWarAscend.Gameplay
 
 			Nameplate.enabled = true;
 			Nameplate.SetNickname(Nickname);
+		}
+
+		private void ResetPresentationStateOnRespawn()
+		{
+			IsJumpingValue = false;
+			IsAttackActive = false;
+			AttackStageValue = 0;
+			QueuedAttackStageValue = 0;
+			AttackStageTimerValue = default;
+			AttackCooldownTimerValue = default;
+			AttackDirectionValue = Vector3.zero;
+			AttackVisualStageValue = 0;
+			VisibleAttackVisualCounter = AttackVisualCounterValue;
+
+			if (Hitbox != null)
+			{
+				Hitbox.enabled = Health != null && Health.IsAlive;
+			}
+
+			if (Animator != null)
+			{
+				Animator.Rebind();
+				Animator.Update(0f);
+				Animator.SetBool(_animIDDead, false);
+				Animator.SetBool(_animIDJump, false);
+				Animator.SetBool(_animIDFreeFall, false);
+			}
+
+			if (DustParticles != null)
+			{
+				DustParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+			}
+
+			if (FootstepSound != null)
+			{
+				FootstepSound.Stop();
+			}
+
+			OnNicknameChanged();
+
+			SigilWarHealthBar[] healthBars = GetComponentsInChildren<SigilWarHealthBar>(true);
+			for (int i = 0; i < healthBars.Length; i++)
+			{
+				healthBars[i].RefreshNow();
+			}
 		}
 	}
 }

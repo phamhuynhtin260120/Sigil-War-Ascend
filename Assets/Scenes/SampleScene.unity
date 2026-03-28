@@ -100373,6 +100373,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 281636211756945643, guid: 7cb097e8a3961fa45b2d89ebd23272c7,
         type: 3}
+      propertyPath: _matchRulesConfig
+      value: 
+      objectReference: {fileID: 11400000, guid: 76aa1188ea5848d6af4f7c4aef68dbca,
+        type: 2}
+    - target: {fileID: 281636211756945643, guid: 7cb097e8a3961fa45b2d89ebd23272c7,
+        type: 3}
+      propertyPath: GameplayTextConfig
+      value: 
+      objectReference: {fileID: 11400000, guid: 44e0db7ffca34f80bf09759a1e9d706d,
+        type: 2}
+    - target: {fileID: 281636211756945643, guid: 7cb097e8a3961fa45b2d89ebd23272c7,
+        type: 3}
       propertyPath: BossSpawnController
       value: 
       objectReference: {fileID: 848361313}

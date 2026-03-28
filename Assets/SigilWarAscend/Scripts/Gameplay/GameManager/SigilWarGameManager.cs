@@ -11,52 +11,18 @@ namespace SigilWarAscend.Gameplay
 	/// </summary>
 	public sealed partial class SigilWarGameManager : NetworkBehaviour
 	{
-		public static readonly string DefaultReadyUpInstructions =
-			"LUẬT CHƠI SIGIL WAR ASCEND\n\n" +
-			"1. Giai đoạn Sẵn sàng:\n" +
-			"- Tất cả người chơi đọc hướng dẫn và bấm 'Đã hiểu / Sẵn sàng'.\n" +
-			"- Trước khi tất cả cùng sẵn sàng, người chơi KHÔNG thể điều khiển nhân vật.\n\n" +
-			"2. Preparation Phase:\n" +
-			"- Trận đấu bắt đầu đếm ngược.\n" +
-			"- Giai đoạn này được phép respawn.\n\n" +
-			"3. Lane Phase:\n" +
-			"- Người chơi di chuyển, tấn công, tránh bị rơi khỏi map và tranh chấp khu vực.\n" +
-			"- Quái thường xuất hiện theo lane.\n" +
-			"- Giai đoạn này được phép respawn.\n\n" +
-			"4. Portal Phase:\n" +
-			"- Portal mở, boss và các đối tượng tranh chấp bắt đầu xuất hiện.\n" +
-			"- Người chơi vẫn có thể giao tranh và tiếp tục chiếm ưu thế.\n" +
-			"- Giai đoạn này được phép respawn.\n\n" +
-			"5. Core Phase:\n" +
-			"- Core xuất hiện. Người nào giữ Core đủ thời gian quy định sẽ thắng.\n" +
-			"- Giai đoạn này KHÔNG được respawn.\n" +
-			"- Nếu bị hạ gục trong giai đoạn này, bạn bị loại khỏi trận và phải quay về phòng tạo room.\n\n" +
-			"6. Điều kiện thắng:\n" +
-			"- Giữ Core đủ thời gian.\n" +
-			"- Hoặc trở thành người sống sót cuối cùng.\n" +
-			"- Nếu hết giờ mà không ai đạt điều kiện, trận sẽ kết thúc.\n\n" +
-			"CƠ CHẾ NGƯỜI CHƠI:\n" +
-			"- Di chuyển, chạy nhanh, nhảy.\n" +
-			"- Tấn công cận chiến theo combo.\n" +
-			"- Nhận sát thương, hạ gục và hồi sinh ở các giai đoạn được phép.\n" +
-			"- Thu thập vật phẩm khi đi qua đối tượng thu thập.\n" +
-			"- Tạm dừng bằng phím ESC.\n\n" +
-			"ĐIỀU KHIỂN:\n" +
-			"WASD di chuyển | Shift chạy | Space nhảy | Chuột trái tấn công | ESC tạm dừng";
+		private const float DefaultPreparationDuration = 10f;
+		private const float DefaultLanePhaseDuration = 120f;
+		private const float DefaultPortalPhaseDuration = 90f;
+		private const float DefaultCorePhaseDuration = 120f;
+		private const float DefaultCoreControlDuration = 20f;
+		private const float DefaultRespawnDelay = 5f;
+		private const bool DefaultAllowRespawnBeforeCorePhase = true;
+		private const bool DefaultAllowRespawnDuringCorePhase = false;
 
-		[Header("Match Durations")]
-		public float PreparationDuration = 10f;
-		public float LanePhaseDuration = 120f;
-		public float PortalPhaseDuration = 90f;
-		public float CorePhaseDuration = 120f;
-		public float CoreControlDuration = 20f;
-		public float RespawnDelay = 5f;
-
-		[Header("Rules")]
-		public bool AllowRespawnBeforeCorePhase = true;
-		public bool AllowRespawnDuringCorePhase = false;
-		[TextArea(6, 12)]
-		public string ReadyUpInstructions = DefaultReadyUpInstructions;
+		[Header("Config")]
+		[SerializeField] private SigilWarMatchRulesConfig _matchRulesConfig;
+		public SigilWarGameplayTextConfig GameplayTextConfig;
 
 		[Header("Players")]
 		public NetworkObject PlayerPrefab;
@@ -105,6 +71,15 @@ namespace SigilWarAscend.Gameplay
 		private bool _visiblePortalState;
 		private bool _visibleCoreState;
 
+		public SigilWarMatchRulesConfig MatchRulesConfig => ResolveMatchRulesConfig();
+		public float PreparationDuration => MatchRulesConfig != null ? MatchRulesConfig.PreparationDuration : DefaultPreparationDuration;
+		public float LanePhaseDuration => MatchRulesConfig != null ? MatchRulesConfig.LanePhaseDuration : DefaultLanePhaseDuration;
+		public float PortalPhaseDuration => MatchRulesConfig != null ? MatchRulesConfig.PortalPhaseDuration : DefaultPortalPhaseDuration;
+		public float CorePhaseDuration => MatchRulesConfig != null ? MatchRulesConfig.CorePhaseDuration : DefaultCorePhaseDuration;
+		public float CoreControlDuration => MatchRulesConfig != null ? MatchRulesConfig.CoreControlDuration : DefaultCoreControlDuration;
+		public float RespawnDelay => MatchRulesConfig != null ? MatchRulesConfig.RespawnDelay : DefaultRespawnDelay;
+		public bool AllowRespawnBeforeCorePhase => MatchRulesConfig != null ? MatchRulesConfig.AllowRespawnBeforeCorePhase : DefaultAllowRespawnBeforeCorePhase;
+		public bool AllowRespawnDuringCorePhase => MatchRulesConfig != null ? MatchRulesConfig.AllowRespawnDuringCorePhase : DefaultAllowRespawnDuringCorePhase;
 		public float RemainingPhaseTime => PhaseTimer.RemainingTime(Runner) ?? 0f;
 		public float RemainingCoreControlTime => CoreControlTimer.RemainingTime(Runner) ?? 0f;
 		public int ReadyPlayerCount => CountReadyPlayers();
@@ -114,7 +89,24 @@ namespace SigilWarAscend.Gameplay
 
 		public string ResolveReadyUpInstructions()
 		{
-			return string.IsNullOrWhiteSpace(ReadyUpInstructions) ? DefaultReadyUpInstructions : ReadyUpInstructions;
+			SigilWarGameplayTextConfig config = GameplayTextConfig != null ? GameplayTextConfig : SigilWarGameplayTextConfig.LoadDefault();
+			if (config != null && string.IsNullOrWhiteSpace(config.ReadyUpInstructions) == false)
+			{
+				return config.ReadyUpInstructions;
+			}
+
+			return string.Empty;
+		}
+
+		private SigilWarMatchRulesConfig ResolveMatchRulesConfig()
+		{
+			if (_matchRulesConfig != null)
+			{
+				return _matchRulesConfig;
+			}
+
+			_matchRulesConfig = SigilWarMatchRulesConfig.LoadDefault();
+			return _matchRulesConfig;
 		}
 
 		public override void Spawned()
@@ -122,11 +114,6 @@ namespace SigilWarAscend.Gameplay
 			BindSpawnControllers();
 			ApplyWorldState(force: true);
 			LogWorld($"Spawned | phase={CurrentPhase}, portalsOpen={ArePortalsOpen}, coreSpawned={IsCoreSpawned}");
-
-			if (PlayerPrefab != null && Runner.GetPlayerObject(Runner.LocalPlayer) == null)
-			{
-				SpawnLocalPlayer();
-			}
 
 			if (HasStateAuthority && CurrentPhase == MatchPhase.None && IsReadyUpActive == false)
 			{
@@ -349,6 +336,18 @@ namespace SigilWarAscend.Gameplay
 
 			Runner.SetPlayerObject(Runner.LocalPlayer, playerObject);
 			LogRespawn($"Spawn local player {FormatPlayer(Runner.LocalPlayer)} at {position}");
+		}
+
+		public bool EnsureLocalPlayerSpawned()
+		{
+			if (Runner == null || PlayerPrefab == null)
+				return false;
+
+			if (Runner.GetPlayerObject(Runner.LocalPlayer) != null)
+				return true;
+
+			SpawnLocalPlayer();
+			return true;
 		}
 
 		private void BindSpawnControllers()

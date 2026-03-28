@@ -66,9 +66,14 @@ namespace SigilWarAscend.UI
 				_mainCamera = Camera.main;
 			}
 
+			RefreshNow();
+			UpdateBillboard();
+		}
+
+		public void RefreshNow()
+		{
 			UpdateValue();
 			UpdateVisibility();
-			UpdateBillboard();
 		}
 
 		private void UpdateValue()
