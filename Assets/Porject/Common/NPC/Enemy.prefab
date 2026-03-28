@@ -1913,6 +1913,10 @@ MonoBehaviour:
   DeathTime: 3
   VisualRoot: {fileID: 4719230333926200694}
   DeathRoot: {fileID: 0}
+  HideVisualRootWhenDead: 0
+  EnableDebugLogs: 0
+  LogDamageFlow: 1
+  LogLifecycleFlow: 1
   _NetworkHealth: 0
 --- !u!114 &598574446473298025
 MonoBehaviour:
@@ -1956,7 +1960,7 @@ MonoBehaviour:
   AttackTriggerParameter: Attack
   SpeedParameter: Speed
   DeadParameter: Dead
-  EnableDebugLogs: 1
+  EnableDebugLogs: 0
 --- !u!1 &3685472007433669814
 GameObject:
   m_ObjectHideFlags: 0

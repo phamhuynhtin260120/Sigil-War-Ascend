@@ -68,6 +68,7 @@ namespace SigilWarAscend.Gameplay
 		private int _animIDFreeFall;
 		private int _animIDMotionSpeed;
 		private int _animIDDead;
+		private Camera _resolvedMainCamera;
 
 		public PlayerRef OwnerPlayerRef => Object != null ? Object.StateAuthority : PlayerRef.None;
 		public bool IsAlive => Health != null && Health.IsAlive;
@@ -142,6 +143,7 @@ namespace SigilWarAscend.Gameplay
 		public override void Spawned()
 		{
 			EnsurePlayerComponents();
+			TryResolveMainCamera(forceRefresh: true);
 
 			if (IsLocallyControlled)
 			{
@@ -231,17 +233,19 @@ namespace SigilWarAscend.Gameplay
 			if (IsLocallyControlled == false)
 				return;
 
-			if (CanProcessCamera() == false)
+			if (CanOwnCamera() == false)
 				return;
+
+			TryResolveMainCamera(forceRefresh: false);
 
 			if (CameraPivot != null)
 			{
 				CameraPivot.rotation = Quaternion.Euler(PlayerInput.CurrentInput.LookRotation);
 			}
 
-			if (Camera.main != null && CameraHandle != null)
+			if (_resolvedMainCamera != null && CameraHandle != null)
 			{
-				Camera.main.transform.SetPositionAndRotation(CameraHandle.position, CameraHandle.rotation);
+				_resolvedMainCamera.transform.SetPositionAndRotation(CameraHandle.position, CameraHandle.rotation);
 			}
 		}
 
@@ -405,6 +409,14 @@ namespace SigilWarAscend.Gameplay
 
 		private bool CanProcessCamera()
 		{
+			if (CanOwnCamera() == false)
+				return false;
+
+			return Cursor.lockState == CursorLockMode.Locked;
+		}
+
+		private bool CanOwnCamera()
+		{
 			if (IsLocallyControlled == false)
 				return false;
 
@@ -417,7 +429,19 @@ namespace SigilWarAscend.Gameplay
 			if (_gameManager != null && _gameManager.IsReadyUpActive)
 				return false;
 
-			return Cursor.lockState == CursorLockMode.Locked;
+			return true;
+		}
+
+		private void TryResolveMainCamera(bool forceRefresh)
+		{
+			if (forceRefresh == false && _resolvedMainCamera != null && _resolvedMainCamera.isActiveAndEnabled)
+				return;
+
+			_resolvedMainCamera = Camera.main;
+			if (_resolvedMainCamera == null)
+			{
+				_resolvedMainCamera = FindFirstObjectByType<Camera>();
+			}
 		}
 
 		private void AssignAnimationIDs()
