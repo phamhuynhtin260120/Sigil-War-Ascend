@@ -51841,7 +51841,7 @@ GameObject:
   - component: {fileID: 1659766950939880039}
   - component: {fileID: -8412604266348383568}
   m_Layer: 0
-  m_Name: Kazuha 2
+  m_Name: Kazuha 3
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -51880,7 +51880,7 @@ MonoBehaviour:
   m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fusion.Runtime.dll::Fusion.NetworkObject
-  SortKey: 3886732511
+  SortKey: 3437647084
   ObjectInterest: 1
   Flags: 262145
   NestedObjects: []
