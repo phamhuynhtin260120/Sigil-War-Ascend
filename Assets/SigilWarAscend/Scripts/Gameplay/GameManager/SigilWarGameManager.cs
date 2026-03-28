@@ -11,6 +11,39 @@ namespace SigilWarAscend.Gameplay
 	/// </summary>
 	public sealed partial class SigilWarGameManager : NetworkBehaviour
 	{
+		public static readonly string DefaultReadyUpInstructions =
+			"LUẬT CHƠI SIGIL WAR ASCEND\n\n" +
+			"1. Giai đoạn Sẵn sàng:\n" +
+			"- Tất cả người chơi đọc hướng dẫn và bấm 'Đã hiểu / Sẵn sàng'.\n" +
+			"- Trước khi tất cả cùng sẵn sàng, người chơi KHÔNG thể điều khiển nhân vật.\n\n" +
+			"2. Preparation Phase:\n" +
+			"- Trận đấu bắt đầu đếm ngược.\n" +
+			"- Giai đoạn này được phép respawn.\n\n" +
+			"3. Lane Phase:\n" +
+			"- Người chơi di chuyển, tấn công, tránh bị rơi khỏi map và tranh chấp khu vực.\n" +
+			"- Quái thường xuất hiện theo lane.\n" +
+			"- Giai đoạn này được phép respawn.\n\n" +
+			"4. Portal Phase:\n" +
+			"- Portal mở, boss và các đối tượng tranh chấp bắt đầu xuất hiện.\n" +
+			"- Người chơi vẫn có thể giao tranh và tiếp tục chiếm ưu thế.\n" +
+			"- Giai đoạn này được phép respawn.\n\n" +
+			"5. Core Phase:\n" +
+			"- Core xuất hiện. Người nào giữ Core đủ thời gian quy định sẽ thắng.\n" +
+			"- Giai đoạn này KHÔNG được respawn.\n" +
+			"- Nếu bị hạ gục trong giai đoạn này, bạn bị loại khỏi trận và phải quay về phòng tạo room.\n\n" +
+			"6. Điều kiện thắng:\n" +
+			"- Giữ Core đủ thời gian.\n" +
+			"- Hoặc trở thành người sống sót cuối cùng.\n" +
+			"- Nếu hết giờ mà không ai đạt điều kiện, trận sẽ kết thúc.\n\n" +
+			"CƠ CHẾ NGƯỜI CHƠI:\n" +
+			"- Di chuyển, chạy nhanh, nhảy.\n" +
+			"- Tấn công cận chiến theo combo.\n" +
+			"- Nhận sát thương, hạ gục và hồi sinh ở các giai đoạn được phép.\n" +
+			"- Thu thập vật phẩm khi đi qua đối tượng thu thập.\n" +
+			"- Tạm dừng bằng phím ESC.\n\n" +
+			"ĐIỀU KHIỂN:\n" +
+			"WASD di chuyển | Shift chạy | Space nhảy | Chuột trái tấn công | ESC tạm dừng";
+
 		[Header("Match Durations")]
 		public float PreparationDuration = 10f;
 		public float LanePhaseDuration = 120f;
@@ -22,6 +55,8 @@ namespace SigilWarAscend.Gameplay
 		[Header("Rules")]
 		public bool AllowRespawnBeforeCorePhase = true;
 		public bool AllowRespawnDuringCorePhase = false;
+		[TextArea(6, 12)]
+		public string ReadyUpInstructions = DefaultReadyUpInstructions;
 
 		[Header("Players")]
 		public NetworkObject PlayerPrefab;
@@ -55,6 +90,10 @@ namespace SigilWarAscend.Gameplay
 		public PlayerRef CurrentCoreHolder { get; set; }
 		[Networked]
 		public TickTimer CoreControlTimer { get; set; }
+		[Networked]
+		public NetworkBool IsReadyUpActive { get; set; }
+		[Networked]
+		public int ReadyPlayerMask { get; set; }
 
 		private readonly Dictionary<PlayerRef, TickTimer> _pendingRespawns = new Dictionary<PlayerRef, TickTimer>();
 		private readonly Dictionary<PlayerRef, int> _spawnCounters = new Dictionary<PlayerRef, int>();
@@ -68,6 +107,15 @@ namespace SigilWarAscend.Gameplay
 
 		public float RemainingPhaseTime => PhaseTimer.RemainingTime(Runner) ?? 0f;
 		public float RemainingCoreControlTime => CoreControlTimer.RemainingTime(Runner) ?? 0f;
+		public int ReadyPlayerCount => CountReadyPlayers();
+		public int ActivePlayerCount => _activePlayerBuffer.Count;
+		public bool IsRespawnAllowedInCurrentPhase => CanRespawnInCurrentPhase();
+		public string ResolvedReadyUpInstructions => ResolveReadyUpInstructions();
+
+		public string ResolveReadyUpInstructions()
+		{
+			return string.IsNullOrWhiteSpace(ReadyUpInstructions) ? DefaultReadyUpInstructions : ReadyUpInstructions;
+		}
 
 		public override void Spawned()
 		{
@@ -80,9 +128,9 @@ namespace SigilWarAscend.Gameplay
 				SpawnLocalPlayer();
 			}
 
-			if (HasStateAuthority && CurrentPhase == MatchPhase.None)
+			if (HasStateAuthority && CurrentPhase == MatchPhase.None && IsReadyUpActive == false)
 			{
-				StartPreparationPhase();
+				StartReadyUpPhase();
 			}
 		}
 
@@ -91,9 +139,10 @@ namespace SigilWarAscend.Gameplay
 			if (HasStateAuthority)
 			{
 				RefreshActivePlayers();
+				ProcessReadyUpState();
 				ProcessPendingRespawns();
 
-				if (CurrentPhase != MatchPhase.MatchEnded)
+				if (CurrentPhase != MatchPhase.MatchEnded && IsReadyUpActive == false)
 				{
 					ProcessPhaseFlow();
 					ProcessEncounterSpawners();
@@ -215,6 +264,30 @@ namespace SigilWarAscend.Gameplay
 			LogWorld($"Core holder set to {FormatPlayer(holder)} | controlDuration={FormatTime(CoreControlDuration)}");
 		}
 
+		public bool IsPlayerReady(PlayerRef playerRef)
+		{
+			if (playerRef == PlayerRef.None)
+				return false;
+
+			int bit = GetReadyBit(playerRef);
+			return bit != 0 && (ReadyPlayerMask & bit) != 0;
+		}
+
+		public void SetPlayerReady(PlayerRef playerRef, bool isReady)
+		{
+			if (playerRef == PlayerRef.None)
+				return;
+
+			if (HasStateAuthority)
+			{
+				ApplyPlayerReadyState(playerRef, isReady);
+			}
+			else
+			{
+				RPC_SetPlayerReady(playerRef, isReady);
+			}
+		}
+
 		[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
 		private void RPC_RequestRespawn(PlayerRef playerRef)
 		{
@@ -231,6 +304,12 @@ namespace SigilWarAscend.Gameplay
 		private void RPC_NotifyCoreHolderChanged(PlayerRef holder)
 		{
 			NotifyCoreHolderChanged(holder);
+		}
+
+		[Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+		private void RPC_SetPlayerReady(PlayerRef playerRef, NetworkBool isReady)
+		{
+			ApplyPlayerReadyState(playerRef, isReady);
 		}
 
 		[Rpc(RpcSources.StateAuthority, RpcTargets.All)]

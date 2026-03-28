@@ -59,11 +59,9 @@ namespace SigilWarAscend.Gameplay
 		private int AttackVisualCounter { get; set; }
 		[Networked]
 		private int AttackVisualStage { get; set; }
-
 		private SigilWarGameManager _gameManager;
 		private bool _deathReported;
 		private int _visibleAttackVisualCounter;
-
 		private int _animIDSpeed;
 		private int _animIDGrounded;
 		private int _animIDJump;
@@ -395,6 +393,9 @@ namespace SigilWarAscend.Gameplay
 			if (_gameManager != null && _gameManager.CurrentPhase == MatchPhase.MatchEnded)
 				return false;
 
+			if (_gameManager != null && _gameManager.IsReadyUpActive)
+				return false;
+
 			return Cursor.lockState == CursorLockMode.Locked;
 		}
 
@@ -407,6 +408,9 @@ namespace SigilWarAscend.Gameplay
 				return false;
 
 			if (_gameManager != null && _gameManager.CurrentPhase == MatchPhase.MatchEnded)
+				return false;
+
+			if (_gameManager != null && _gameManager.IsReadyUpActive)
 				return false;
 
 			return Cursor.lockState == CursorLockMode.Locked;

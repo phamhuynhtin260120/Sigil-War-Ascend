@@ -37,31 +37,43 @@ namespace SigilWarAscend.UI
 
 		private NetworkRunner _runnerInstance;
 		private static string _shutdownStatus;
-		private Canvas _parentCanvas;
-		private RectTransform _overlayRoot;
-		private CanvasGroup _hudGroup;
-		private RectTransform _hudPanel;
-		private TextMeshProUGUI _phaseText;
-		private TextMeshProUGUI _objectiveText;
-		private TextMeshProUGUI _timerText;
-		private TextMeshProUGUI _statsText;
-		private TextMeshProUGUI _hintText;
-		private GameObject _matchEndRoot;
-		private TextMeshProUGUI _matchEndTitleText;
-		private TextMeshProUGUI _matchEndBodyText;
-		private Button _resumeButton;
-		private RectTransform _menuExtrasRoot;
-		private GameObject _settingsPanel;
-		private GameObject _tutorialPanel;
-		private GameObject _creditsPanel;
-		private Slider _masterVolumeSlider;
-		private TextMeshProUGUI _volumeValueText;
-		private Button _settingsButton;
-		private Button _tutorialButton;
-		private Button _creditsButton;
+		[Header("Optional Designer References")]
+		[SerializeField] private Canvas _parentCanvas;
+		[SerializeField] private Button _resumeButton;
+		[SerializeField] private RectTransform _menuExtrasRoot;
+		[SerializeField] private Button _settingsButton;
+		[SerializeField] private Button _tutorialButton;
+		[SerializeField] private Button _creditsButton;
+		[SerializeField] private GameObject _settingsPanel;
+		[SerializeField] private GameObject _tutorialPanel;
+		[SerializeField] private TextMeshProUGUI _tutorialBodyText;
+		[SerializeField] private GameObject _creditsPanel;
+		[SerializeField] private Slider _masterVolumeSlider;
+		[SerializeField] private TextMeshProUGUI _volumeValueText;
+		[SerializeField] private RectTransform _overlayRoot;
+		[SerializeField] private CanvasGroup _hudGroup;
+		[SerializeField] private RectTransform _hudPanel;
+		[SerializeField] private GameObject _timerRoot;
+		[SerializeField] private TextMeshProUGUI _phaseText;
+		[SerializeField] private TextMeshProUGUI _objectiveText;
+		[SerializeField] private TextMeshProUGUI _timerText;
+		[SerializeField] private TextMeshProUGUI _statsText;
+		[SerializeField] private TextMeshProUGUI _hintText;
+		[SerializeField] private GameObject _matchEndRoot;
+		[SerializeField] private TextMeshProUGUI _matchEndTitleText;
+		[SerializeField] private TextMeshProUGUI _matchEndBodyText;
+		[SerializeField] private Button _matchEndBackButton;
+		[SerializeField] private GameObject _readyUpRoot;
+		[SerializeField] private TextMeshProUGUI _readyUpBodyText;
+		[SerializeField] private TextMeshProUGUI _readyUpStatusText;
+		[SerializeField] private Button _readyUpConfirmButton;
+		[SerializeField] private TextMeshProUGUI _readyUpConfirmLabel;
+		[SerializeField] private GameObject _eliminationRoot;
+		[SerializeField] private Button _returnToRoomButton;
 		private bool _isMatchEndVisible;
 
 		private const string MasterVolumePrefsKey = "SigilWar.MasterVolume";
+		private static readonly string SharedTutorialText = SigilWarGameManager.DefaultReadyUpInstructions;
 
 		public bool IsMenuOpen => PanelGroup != null && PanelGroup.alpha > 0.001f && PanelGroup.blocksRaycasts;
 		public bool IsConnected => _runnerInstance != null;
@@ -69,6 +81,8 @@ namespace SigilWarAscend.UI
 		private void Awake()
 		{
 			EnsureRuntimeUi();
+			BindUiCallbacks();
+			ApplyStaticUiTexts();
 		}
 
 		public async void StartGame()
@@ -145,6 +159,8 @@ namespace SigilWarAscend.UI
 		private void OnEnable()
 		{
 			EnsureRuntimeUi();
+			BindUiCallbacks();
+			ApplyStaticUiTexts();
 
 			string nickname = PlayerPrefs.GetString(SigilWarPlayerPrefsKeys.PlayerName);
 			if (string.IsNullOrEmpty(nickname))
@@ -299,6 +315,121 @@ namespace SigilWarAscend.UI
 			EnsureResumeButton();
 			EnsureMenuExtraButtons();
 			EnsureGameplayOverlay();
+			EnsureReadyUpOverlay();
+			EnsureEliminationOverlay();
+		}
+
+		private void BindUiCallbacks()
+		{
+			if (_resumeButton != null)
+			{
+				_resumeButton.onClick.RemoveListener(ClosePauseMenu);
+				_resumeButton.onClick.AddListener(ClosePauseMenu);
+			}
+
+			if (_settingsButton != null)
+			{
+				_settingsButton.onClick.RemoveListener(OpenSettingsPanel);
+				_settingsButton.onClick.AddListener(OpenSettingsPanel);
+			}
+
+			if (_tutorialButton != null)
+			{
+				_tutorialButton.onClick.RemoveListener(OpenTutorialPanel);
+				_tutorialButton.onClick.AddListener(OpenTutorialPanel);
+			}
+
+			if (_creditsButton != null)
+			{
+				_creditsButton.onClick.RemoveListener(OpenCreditsPanel);
+				_creditsButton.onClick.AddListener(OpenCreditsPanel);
+			}
+
+			if (_readyUpConfirmButton != null)
+			{
+				_readyUpConfirmButton.onClick.RemoveListener(ConfirmReadyUp);
+				_readyUpConfirmButton.onClick.AddListener(ConfirmReadyUp);
+			}
+
+			if (_matchEndBackButton != null)
+			{
+				_matchEndBackButton.onClick.RemoveListener(BackToMenu);
+				_matchEndBackButton.onClick.AddListener(BackToMenu);
+			}
+
+			if (_returnToRoomButton != null)
+			{
+				_returnToRoomButton.onClick.RemoveListener(BackToMenu);
+				_returnToRoomButton.onClick.AddListener(BackToMenu);
+			}
+
+			if (_masterVolumeSlider != null)
+			{
+				_masterVolumeSlider.onValueChanged.RemoveListener(ApplyMasterVolumeFromSlider);
+				_masterVolumeSlider.onValueChanged.AddListener(ApplyMasterVolumeFromSlider);
+			}
+		}
+
+		private void ApplyStaticUiTexts()
+		{
+			if (_tutorialBodyText != null)
+			{
+				_tutorialBodyText.text = SharedTutorialText;
+			}
+
+			float initialVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(MasterVolumePrefsKey, 0.8f));
+			if (_masterVolumeSlider != null)
+			{
+				_masterVolumeSlider.SetValueWithoutNotify(initialVolume);
+			}
+
+			ApplyMasterVolume(initialVolume);
+		}
+
+		private void ClosePauseMenu()
+		{
+			SetMenuVisible(false);
+		}
+
+		private void OpenSettingsPanel()
+		{
+			ToggleMenuPanel(_settingsPanel);
+		}
+
+		private void OpenTutorialPanel()
+		{
+			ToggleMenuPanel(_tutorialPanel);
+		}
+
+		private void OpenCreditsPanel()
+		{
+			ToggleMenuPanel(_creditsPanel);
+		}
+
+		private bool HasAssignedGameplayOverlay()
+		{
+			return _hudPanel != null
+				&& _phaseText != null
+				&& _objectiveText != null
+				&& _timerText != null
+				&& _statsText != null
+				&& _matchEndRoot != null
+				&& _matchEndTitleText != null
+				&& _matchEndBodyText != null;
+		}
+
+		private bool HasAssignedReadyUpOverlay()
+		{
+			return _readyUpRoot != null
+				&& _readyUpBodyText != null
+				&& _readyUpStatusText != null
+				&& _readyUpConfirmButton != null
+				&& _readyUpConfirmLabel != null;
+		}
+
+		private bool HasAssignedEliminationOverlay()
+		{
+			return _eliminationRoot != null && _returnToRoomButton != null;
 		}
 
 		private void EnsureResumeButton()
@@ -317,13 +448,12 @@ namespace SigilWarAscend.UI
 				new Color(0.17f, 0.48f, 0.33f, 0.92f));
 
 			_resumeButton = buttonRect.GetComponent<Button>();
-			_resumeButton.onClick.AddListener(() => SetMenuVisible(false));
 			_resumeButton.gameObject.SetActive(false);
 		}
 
 		private void EnsureGameplayOverlay()
 		{
-			if (_overlayRoot != null || _parentCanvas == null)
+			if (HasAssignedGameplayOverlay() || _parentCanvas == null)
 				return;
 
 			_overlayRoot = CreateStretchRect("GameplayOverlayRuntime", _parentCanvas.transform as RectTransform);
@@ -397,6 +527,7 @@ namespace SigilWarAscend.UI
 				new Vector2(1f, 1f),
 				new Vector2(16f, 10f),
 				new Vector2(-16f, -10f));
+			_timerRoot = timerPanel.gameObject;
 
 			_hintText = CreateText(
 				_overlayRoot,
@@ -463,12 +594,147 @@ namespace SigilWarAscend.UI
 				new Vector2(0f, 34f),
 				new Vector2(230f, 56f),
 				new Color(0.22f, 0.45f, 0.73f, 0.95f));
-			backButton.GetComponent<Button>().onClick.AddListener(BackToMenu);
+			_matchEndBackButton = backButton.GetComponent<Button>();
+		}
+
+		private void EnsureReadyUpOverlay()
+		{
+			if (HasAssignedReadyUpOverlay() || _parentCanvas == null)
+				return;
+
+			var root = CreatePanel(
+				_overlayRoot != null ? _overlayRoot : CreateStretchRect("GameplayOverlayRuntime", _parentCanvas.transform as RectTransform),
+				"ReadyUpOverlayRuntime",
+				new Vector2(0f, 0f),
+				new Vector2(1f, 1f),
+				Vector2.zero,
+				Vector2.zero,
+				new Color(0f, 0f, 0f, 0.72f)).gameObject;
+			_readyUpRoot = root;
+			_readyUpRoot.SetActive(false);
+
+			var card = CreatePanel(
+				root.transform as RectTransform,
+				"ReadyUpCard",
+				new Vector2(0.5f, 0.5f),
+				new Vector2(0.5f, 0.5f),
+				new Vector2(0f, 0f),
+				new Vector2(860f, 620f),
+				new Color(0.08f, 0.11f, 0.16f, 0.97f));
+
+			CreateText(
+				card,
+				"ReadyUpTitle",
+				"Hướng Dẫn Trước Khi Vào Trận",
+				34,
+				FontStyles.Bold,
+				TextAlignmentOptions.Center,
+				new Vector2(0f, 1f),
+				new Vector2(1f, 1f),
+				new Vector2(28f, -30f),
+				new Vector2(-28f, 84f));
+
+			_readyUpBodyText = CreateText(
+				card,
+				"ReadyUpBody",
+				string.Empty,
+				22,
+				FontStyles.Normal,
+				TextAlignmentOptions.TopLeft,
+				new Vector2(0f, 0f),
+				new Vector2(1f, 1f),
+				new Vector2(32f, 134f),
+				new Vector2(-32f, -150f));
+
+			_readyUpStatusText = CreateText(
+				card,
+				"ReadyUpStatus",
+				"Đang chờ người chơi sẵn sàng...",
+				20,
+				FontStyles.Bold,
+				TextAlignmentOptions.Center,
+				new Vector2(0f, 0f),
+				new Vector2(1f, 0f),
+				new Vector2(28f, 88f),
+				new Vector2(-28f, 124f));
+
+			var confirmRect = CreateButton(
+				card,
+				"ReadyUpConfirmButton",
+				"Đã hiểu / Sẵn sàng",
+				new Vector2(0.5f, 0f),
+				new Vector2(0.5f, 0f),
+				new Vector2(0f, 42f),
+				new Vector2(280f, 60f),
+				new Color(0.20f, 0.56f, 0.36f, 0.96f));
+			_readyUpConfirmButton = confirmRect.GetComponent<Button>();
+			_readyUpConfirmLabel = confirmRect.GetComponentInChildren<TextMeshProUGUI>(true);
+		}
+
+		private void EnsureEliminationOverlay()
+		{
+			if (HasAssignedEliminationOverlay() || _parentCanvas == null)
+				return;
+
+			var root = CreatePanel(
+				_overlayRoot != null ? _overlayRoot : CreateStretchRect("GameplayOverlayRuntime", _parentCanvas.transform as RectTransform),
+				"EliminationOverlayRuntime",
+				new Vector2(0f, 0f),
+				new Vector2(1f, 1f),
+				Vector2.zero,
+				Vector2.zero,
+				new Color(0f, 0f, 0f, 0.72f)).gameObject;
+			_eliminationRoot = root;
+			_eliminationRoot.SetActive(false);
+
+			var card = CreatePanel(
+				root.transform as RectTransform,
+				"EliminationCard",
+				new Vector2(0.5f, 0.5f),
+				new Vector2(0.5f, 0.5f),
+				new Vector2(0f, 0f),
+				new Vector2(620f, 280f),
+				new Color(0.10f, 0.11f, 0.16f, 0.97f));
+
+			CreateText(
+				card,
+				"EliminationTitle",
+				"Bạn Đã Bị Loại Khỏi Trận",
+				30,
+				FontStyles.Bold,
+				TextAlignmentOptions.Center,
+				new Vector2(0f, 1f),
+				new Vector2(1f, 1f),
+				new Vector2(24f, -28f),
+				new Vector2(-24f, 72f));
+
+			CreateText(
+				card,
+				"EliminationBody",
+				"Giai đoạn hiện tại không cho phép hồi sinh. Bạn có thể rời trận và quay về phòng tạo room để bắt đầu lại.",
+				22,
+				FontStyles.Normal,
+				TextAlignmentOptions.Center,
+				new Vector2(0f, 0f),
+				new Vector2(1f, 1f),
+				new Vector2(28f, 86f),
+				new Vector2(-28f, -96f));
+
+			var returnButton = CreateButton(
+				card,
+				"ReturnToRoomButton",
+				"Quay Về Phòng Tạo Room",
+				new Vector2(0.5f, 0f),
+				new Vector2(0.5f, 0f),
+				new Vector2(0f, 34f),
+				new Vector2(300f, 58f),
+				new Color(0.58f, 0.30f, 0.20f, 0.96f));
+			_returnToRoomButton = returnButton.GetComponent<Button>();
 		}
 
 		private void EnsureMenuExtraButtons()
 		{
-			if (_menuExtrasRoot != null || PanelGroup == null)
+			if ((_menuExtrasRoot != null || _settingsButton != null || _tutorialButton != null || _creditsButton != null || _settingsPanel != null || _tutorialPanel != null || _creditsPanel != null) || PanelGroup == null)
 				return;
 
 			_menuExtrasRoot = CreateStretchRect("MenuExtrasRuntime", PanelGroup.transform as RectTransform);
@@ -482,7 +748,6 @@ namespace SigilWarAscend.UI
 				new Vector2(-150f, 112f),
 				new Vector2(200f, 52f),
 				new Color(0.20f, 0.34f, 0.56f, 0.92f)).GetComponent<Button>();
-			_settingsButton.onClick.AddListener(() => ToggleMenuPanel(_settingsPanel));
 
 			_tutorialButton = CreateButton(
 				_menuExtrasRoot,
@@ -493,7 +758,6 @@ namespace SigilWarAscend.UI
 				new Vector2(-150f, 174f),
 				new Vector2(200f, 52f),
 				new Color(0.29f, 0.42f, 0.24f, 0.92f)).GetComponent<Button>();
-			_tutorialButton.onClick.AddListener(() => ToggleMenuPanel(_tutorialPanel));
 
 			_creditsButton = CreateButton(
 				_menuExtrasRoot,
@@ -504,7 +768,6 @@ namespace SigilWarAscend.UI
 				new Vector2(-150f, 236f),
 				new Vector2(200f, 52f),
 				new Color(0.45f, 0.28f, 0.18f, 0.92f)).GetComponent<Button>();
-			_creditsButton.onClick.AddListener(() => ToggleMenuPanel(_creditsPanel));
 
 			_settingsPanel = CreateModalPanel(
 				_menuExtrasRoot,
@@ -541,7 +804,6 @@ namespace SigilWarAscend.UI
 				new Vector2(1f, 0f),
 				new Vector2(8f, 12f),
 				new Vector2(-96f, 38f));
-			_masterVolumeSlider.onValueChanged.AddListener(ApplyMasterVolumeFromSlider);
 
 			_volumeValueText = CreateText(
 				sliderRoot,
@@ -555,15 +817,16 @@ namespace SigilWarAscend.UI
 				new Vector2(-84f, 8f),
 				new Vector2(-8f, -8f));
 
-			float initialVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(MasterVolumePrefsKey, 0.8f));
-			_masterVolumeSlider.SetValueWithoutNotify(initialVolume);
-			ApplyMasterVolume(initialVolume);
-
 			_tutorialPanel = CreateModalPanel(
 				_menuExtrasRoot,
 				"TutorialPanelRuntime",
 				"How To Play",
-				"1. Join the room and wait for the preparation phase.\n2. Move with WASD, attack with left click, jump with Space, sprint with Shift.\n3. Survive lane pressure, then contest the portal phase.\n4. Capture and hold the core during the final phase to win.\n5. Press ESC anytime during a match to pause.");
+				SharedTutorialText);
+			var tutorialTexts = _tutorialPanel.GetComponentsInChildren<TextMeshProUGUI>(true);
+			if (tutorialTexts.Length > 1)
+			{
+				_tutorialBodyText = tutorialTexts[1];
+			}
 			_tutorialPanel.SetActive(false);
 
 			_creditsPanel = CreateModalPanel(
@@ -576,25 +839,28 @@ namespace SigilWarAscend.UI
 
 		private void RefreshGameplayOverlay()
 		{
-			if (_overlayRoot == null)
+			if (HasAssignedGameplayOverlay() == false && HasAssignedReadyUpOverlay() == false && HasAssignedEliminationOverlay() == false)
 				return;
 
 			var gameManager = FindObjectOfType<SigilWarGameManager>();
 			bool hasGameplayContext = IsConnected && gameManager != null;
+			RefreshReadyUpOverlay(gameManager);
+			RefreshEliminationOverlay(gameManager);
 
 			if (_hudPanel != null)
 			{
-				_hudPanel.gameObject.SetActive(hasGameplayContext);
+				_hudPanel.gameObject.SetActive(hasGameplayContext && (gameManager == null || gameManager.IsReadyUpActive == false) && (_eliminationRoot == null || _eliminationRoot.activeSelf == false));
 			}
 
 			if (_timerText != null)
 			{
-				_timerText.transform.parent.gameObject.SetActive(hasGameplayContext);
+				var timerTarget = _timerRoot != null ? _timerRoot : _timerText.transform.parent.gameObject;
+				timerTarget.SetActive(hasGameplayContext && (gameManager == null || gameManager.IsReadyUpActive == false) && (_eliminationRoot == null || _eliminationRoot.activeSelf == false));
 			}
 
 			if (_hintText != null)
 			{
-				_hintText.gameObject.SetActive(hasGameplayContext && _isMatchEndVisible == false);
+				_hintText.gameObject.SetActive(hasGameplayContext && _isMatchEndVisible == false && (gameManager == null || gameManager.IsReadyUpActive == false) && (_eliminationRoot == null || _eliminationRoot.activeSelf == false));
 			}
 
 			if (hasGameplayContext == false)
@@ -614,6 +880,90 @@ namespace SigilWarAscend.UI
 			else
 			{
 				SetMatchEndVisible(false, string.Empty, string.Empty);
+			}
+		}
+
+		private void RefreshReadyUpOverlay(SigilWarGameManager gameManager)
+		{
+			if (_readyUpRoot == null)
+				return;
+
+			bool visible = IsConnected && gameManager != null && gameManager.IsReadyUpActive;
+			_readyUpRoot.SetActive(visible);
+
+			if (visible == false)
+				return;
+
+			var localPlayer = GetLocalPlayer();
+			PlayerRef localPlayerRef = localPlayer != null ? localPlayer.OwnerPlayerRef : (_runnerInstance != null ? _runnerInstance.LocalPlayer : PlayerRef.None);
+			bool isLocalReady = gameManager.IsPlayerReady(localPlayerRef);
+
+			if (_readyUpBodyText != null)
+			{
+				_readyUpBodyText.text = SharedTutorialText;
+			}
+
+			if (_readyUpStatusText != null)
+			{
+				_readyUpStatusText.text = $"Sẵn sàng: {gameManager.ReadyPlayerCount}/{gameManager.ActivePlayerCount}";
+			}
+
+			if (_readyUpConfirmButton != null)
+			{
+				_readyUpConfirmButton.interactable = isLocalReady == false;
+			}
+
+			if (_readyUpConfirmLabel != null)
+			{
+				_readyUpConfirmLabel.text = isLocalReady ? "Bạn đã sẵn sàng" : "Đã hiểu / Sẵn sàng";
+			}
+
+			HideMenuPanels();
+			if (IsMenuOpen)
+			{
+				SetMenuVisible(false);
+			}
+
+			SetCursorState(false);
+		}
+
+		private void ConfirmReadyUp()
+		{
+			var gameManager = FindObjectOfType<SigilWarGameManager>();
+			if (gameManager == null || _runnerInstance == null)
+				return;
+
+			var localPlayer = GetLocalPlayer();
+			PlayerRef localPlayerRef = localPlayer != null ? localPlayer.OwnerPlayerRef : _runnerInstance.LocalPlayer;
+			gameManager.SetPlayerReady(localPlayerRef, true);
+		}
+
+		private void RefreshEliminationOverlay(SigilWarGameManager gameManager)
+		{
+			if (_eliminationRoot == null)
+				return;
+
+			bool visible = false;
+			if (IsConnected && gameManager != null && gameManager.IsReadyUpActive == false && gameManager.CurrentPhase != MatchPhase.MatchEnded)
+			{
+				var localPlayer = GetLocalPlayer();
+				if (localPlayer != null && localPlayer.Health != null)
+				{
+					visible = localPlayer.Health.IsAlive == false && gameManager.IsRespawnAllowedInCurrentPhase == false;
+				}
+			}
+
+			_eliminationRoot.SetActive(visible);
+
+			if (visible)
+			{
+				HideMenuPanels();
+				if (IsMenuOpen)
+				{
+					SetMenuVisible(false);
+				}
+
+				SetCursorState(false);
 			}
 		}
 
@@ -876,6 +1226,7 @@ namespace SigilWarAscend.UI
 			textComponent.alignment = alignment;
 			textComponent.color = Color.white;
 			textComponent.enableWordWrapping = true;
+			textComponent.raycastTarget = false;
 			if (TMP_Settings.defaultFontAsset != null)
 			{
 				textComponent.font = TMP_Settings.defaultFontAsset;
