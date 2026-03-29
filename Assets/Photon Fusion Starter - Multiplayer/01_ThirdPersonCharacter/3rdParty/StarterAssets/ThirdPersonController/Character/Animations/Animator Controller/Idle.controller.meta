@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: bd6546c5ff3a34362b956003b4b0ae16
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 269483
+  packageName: One Handed Sword Animset Pro
+  packageVersion: 1.0
+  assetPath: Assets/Photon Fusion Starter - Multiplayer/01_ThirdPersonCharacter/3rdParty/StarterAssets/ThirdPersonController/Character/Animations/Animator
+    Controller/Idle.controller
+  uploadId: 738342

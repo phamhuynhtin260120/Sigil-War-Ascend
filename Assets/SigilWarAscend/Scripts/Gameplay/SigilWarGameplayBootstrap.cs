@@ -21,9 +21,10 @@ namespace SigilWarAscend.Gameplay
 
 		private async void Start()
 		{
-			if (SigilWarSessionData.HasPendingLaunch == false)
+			if (SigilWarSessionData.LaunchData.HasPendingLaunch == false)
 			{
 				SigilWarSessionData.SetPendingStatus("No pending launch session. Returning to main menu.");
+				SigilWarSessionData.SetReturnToMainMenuReason("MissingLaunchData");
 				SceneManager.LoadScene(MainMenuSceneName);
 				return;
 			}
@@ -32,6 +33,7 @@ namespace SigilWarAscend.Gameplay
 			{
 				Debug.LogError("[SigilWarGameplayBootstrap] RunnerPrefab is missing.", this);
 				SigilWarSessionData.SetPendingStatus("Runner Prefab is missing in Gameplay scene.");
+				SigilWarSessionData.SetReturnToMainMenuReason("MissingRunnerPrefab");
 				SceneManager.LoadScene(MainMenuSceneName);
 				return;
 			}
@@ -53,12 +55,12 @@ namespace SigilWarAscend.Gameplay
 
 			StartGameArgs startArguments = new StartGameArgs()
 			{
-				GameMode = SigilWarSessionData.RequestedGameMode,
-				SessionName = SigilWarSessionData.RoomName,
-				PlayerCount = SigilWarSessionData.MaxPlayerCount,
+				GameMode = SigilWarSessionData.LaunchData.RequestedGameMode,
+				SessionName = SigilWarSessionData.LaunchData.RoomName,
+				PlayerCount = SigilWarSessionData.LaunchData.MaxPlayerCount,
 				SessionProperties = new Dictionary<string, SessionProperty>
 				{
-					["GameMode"] = SigilWarSessionData.GameModeIdentifier,
+					["GameMode"] = SigilWarSessionData.LaunchData.GameModeIdentifier,
 				},
 				Scene = sceneInfo,
 			};
@@ -67,14 +69,17 @@ namespace SigilWarAscend.Gameplay
 			if (result.Ok == false)
 			{
 				Debug.LogError($"[SigilWarGameplayBootstrap] Failed to start game: {result.ShutdownReason}", this);
-				SigilWarSessionData.Clear();
+				SigilWarSessionData.ClearLaunchData();
 				SigilWarSessionData.SetPendingStatus($"Connection Failed: {result.ShutdownReason}");
+				SigilWarSessionData.SetReturnToMainMenuReason(result.ShutdownReason.ToString());
 				SceneManager.LoadScene(MainMenuSceneName);
 				return;
 			}
 
 			EnsureReadyUpUiController();
-			SigilWarSessionData.Clear();
+			SigilWarSessionData.MarkMatchStarted();
+			SigilWarSessionData.SetSceneFlow(SceneManager.GetActiveScene().name, string.Empty);
+			SigilWarSessionData.ClearLaunchData();
 			SetGameplayCursorLocked(false);
 		}
 
@@ -89,6 +94,7 @@ namespace SigilWarAscend.Gameplay
 		private void OnShutdown(NetworkRunner runner, ShutdownReason reason)
 		{
 			SigilWarSessionData.SetPendingStatus($"Shutdown: {reason}");
+			SigilWarSessionData.SetReturnToMainMenuReason(reason.ToString());
 			SceneManager.LoadScene(MainMenuSceneName);
 		}
 

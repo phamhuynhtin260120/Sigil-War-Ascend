@@ -70,14 +70,16 @@ namespace SigilWarAscend.UI
 			PlayerPrefs.Save();
 
 			GameMode requestedGameMode = Application.isEditor && ForceSinglePlayer ? GameMode.Single : GameMode.Shared;
-			SigilWarSessionData.ConfigureLaunch(roomName, nickname, GameModeIdentifier, MaxPlayerCount, requestedGameMode);
+			SigilWarSessionData.ConfigureMainMenuLaunch(roomName, nickname, GameModeIdentifier, MaxPlayerCount, requestedGameMode);
+			SigilWarSessionData.MarkLaunchReady(GameplaySceneName);
+			SigilWarSessionData.SetSceneFlow("MainMenu", GameplaySceneName);
 			SetStatus(requestedGameMode == GameMode.Single ? "Loading single-player..." : "Loading gameplay...");
 			SceneManager.LoadScene(GameplaySceneName);
 		}
 
 		public void DisconnectClicked()
 		{
-			SigilWarSessionData.Clear();
+			SigilWarSessionData.ResetAll();
 			SetStatus(string.Empty);
 			EnsureDisconnectedMenuVisible();
 		}

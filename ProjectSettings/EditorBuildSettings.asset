@@ -11,5 +11,11 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/GamePlay.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/CharacterSelect.unity
+    guid: db5e014f42ce9b149879a58c27936794
+  - enabled: 1
+    path: Assets/Scenes/Result.unity
+    guid: 40358d2bb7f4441f2be7e78271558dd3
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0
