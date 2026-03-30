@@ -72,6 +72,10 @@ namespace SigilWarAscend.Gameplay
 
 		public PlayerRef OwnerPlayerRef => Object != null ? Object.StateAuthority : PlayerRef.None;
 		public bool IsAlive => Health != null && Health.IsAlive;
+		public int CurrentHealth => Health != null ? Health.CurrentHealth : 0;
+		public int MaxHealth => Health != null ? Health.MaxHealth : 0;
+		public float HealthNormalized => Health != null ? Health.HealthNormalized : 0f;
+		public bool IsLocalPlayer => IsLocallyControlled;
 		internal bool IsLocallyControlled => Object != null && (HasInputAuthority || HasStateAuthority);
 
 		internal bool IsAttackActive

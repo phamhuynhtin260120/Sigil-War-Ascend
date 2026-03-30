@@ -18,13 +18,14 @@ namespace SigilWarAscend.Gameplay
 		private NetworkRunner _runnerInstance;
 		private bool _isStarting;
 		private SigilWarReadyUpUiController _readyUpUiController;
+		private SigilWarGameplayHudController _gameplayHudController;
 
 		private async void Start()
 		{
-			if (SigilWarSessionData.LaunchData.HasPendingLaunch == false)
+			if (SigilWarSessionData.LaunchData.HasPendingLaunch == false || SigilWarSessionData.LaunchData.IsLaunchDataComplete == false)
 			{
-				SigilWarSessionData.SetPendingStatus("No pending launch session. Returning to main menu.");
-				SigilWarSessionData.SetReturnToMainMenuReason("MissingLaunchData");
+				SigilWarSessionData.SetPendingStatus("Launch data is incomplete. Returning to main menu.");
+				SigilWarSessionData.SetReturnToMainMenuReason("IncompleteLaunchData");
 				SceneManager.LoadScene(MainMenuSceneName);
 				return;
 			}
@@ -77,6 +78,7 @@ namespace SigilWarAscend.Gameplay
 			}
 
 			EnsureReadyUpUiController();
+			EnsureGameplayHudController();
 			SigilWarSessionData.MarkMatchStarted();
 			SigilWarSessionData.SetSceneFlow(SceneManager.GetActiveScene().name, string.Empty);
 			SigilWarSessionData.ClearLaunchData();
@@ -88,6 +90,7 @@ namespace SigilWarAscend.Gameplay
 			if (_runnerInstance != null)
 			{
 				EnsureReadyUpUiController();
+				EnsureGameplayHudController();
 			}
 		}
 
@@ -108,6 +111,19 @@ namespace SigilWarAscend.Gameplay
 			{
 				GameObject readyUpRoot = new GameObject("SigilWarReadyUpUi");
 				_readyUpUiController = readyUpRoot.AddComponent<SigilWarReadyUpUiController>();
+			}
+		}
+
+		private void EnsureGameplayHudController()
+		{
+			if (_gameplayHudController != null)
+				return;
+
+			_gameplayHudController = FindFirstObjectByType<SigilWarGameplayHudController>();
+			if (_gameplayHudController == null)
+			{
+				GameObject hudRoot = new GameObject("SigilWarGameplayHud");
+				_gameplayHudController = hudRoot.AddComponent<SigilWarGameplayHudController>();
 			}
 		}
 

@@ -65,6 +65,9 @@ namespace SigilWarAscend.UI
 			LaunchData.GameModeIdentifier = gameModeIdentifier ?? string.Empty;
 			LaunchData.MaxPlayerCount = maxPlayerCount;
 			LaunchData.RequestedGameMode = requestedGameMode;
+			LaunchData.SelectedCharacterId = string.Empty;
+			LaunchData.SelectedRoleId = string.Empty;
+			LaunchData.SelectedSkinId = string.Empty;
 			LaunchData.HasPendingLaunch = true;
 			LaunchData.IsLaunchDataComplete = false;
 			FlowState.LastSceneName = "MainMenu";

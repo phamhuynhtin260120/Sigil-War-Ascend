@@ -295,6 +295,10 @@ namespace SigilWarAscend.UI
 		{
 			GameObject textObject = CreateUiObject(name, parent);
 			TextMeshProUGUI text = textObject.AddComponent<TextMeshProUGUI>();
+			if (TMP_Settings.defaultFontAsset != null)
+			{
+				text.font = TMP_Settings.defaultFontAsset;
+			}
 			text.fontSize = fontSize;
 			text.fontStyle = fontStyle;
 			text.alignment = alignment;

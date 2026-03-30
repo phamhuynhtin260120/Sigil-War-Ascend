@@ -15,6 +15,7 @@ namespace SigilWarAscend.UI
 		[Tooltip("Used by Fusion session properties so this game mode stays isolated from other sample rooms.")]
 		public string GameModeIdentifier = "SigilWarAscend";
 		public int MaxPlayerCount = 4;
+		public string CharacterSelectSceneName = "CharacterSelect";
 		public string GameplaySceneName = "GamePlay";
 
 		[Header("Debug")]
@@ -71,10 +72,9 @@ namespace SigilWarAscend.UI
 
 			GameMode requestedGameMode = Application.isEditor && ForceSinglePlayer ? GameMode.Single : GameMode.Shared;
 			SigilWarSessionData.ConfigureMainMenuLaunch(roomName, nickname, GameModeIdentifier, MaxPlayerCount, requestedGameMode);
-			SigilWarSessionData.MarkLaunchReady(GameplaySceneName);
-			SigilWarSessionData.SetSceneFlow("MainMenu", GameplaySceneName);
-			SetStatus(requestedGameMode == GameMode.Single ? "Loading single-player..." : "Loading gameplay...");
-			SceneManager.LoadScene(GameplaySceneName);
+			SigilWarSessionData.SetSceneFlow("MainMenu", CharacterSelectSceneName);
+			SetStatus("Loading character select...");
+			SceneManager.LoadScene(CharacterSelectSceneName);
 		}
 
 		public void DisconnectClicked()
