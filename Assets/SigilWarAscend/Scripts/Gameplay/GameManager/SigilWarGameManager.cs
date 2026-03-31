@@ -26,6 +26,7 @@ namespace SigilWarAscend.Gameplay
 
 		[Header("Players")]
 		public NetworkObject PlayerPrefab;
+		public SigilWarCharacterRegistry CharacterRegistry;
 		public LaneSpawnGroup[] LaneSpawnGroups;
 
 		[Header("World")]
@@ -332,10 +333,23 @@ namespace SigilWarAscend.Gameplay
 		{
 			var position = GetSpawnPosition(Runner.LocalPlayer);
 			var rotation = GetSpawnRotation(Runner.LocalPlayer);
-			var playerObject = Runner.Spawn(PlayerPrefab, position, rotation, Runner.LocalPlayer);
+			string selectedCharacterId = SigilWarAscend.UI.SigilWarSessionData.LaunchData.SelectedCharacterId;
+			NetworkObject playerPrefab = CharacterRegistry != null
+				? CharacterRegistry.ResolvePlayerPrefab(selectedCharacterId, PlayerPrefab)
+				: PlayerPrefab;
+			var playerObject = Runner.Spawn(playerPrefab, position, rotation, Runner.LocalPlayer);
+
+			if (playerObject != null)
+			{
+				SigilWarPlayer player = playerObject.GetComponent<SigilWarPlayer>();
+				if (player != null)
+				{
+					player.SelectedCharacterId = selectedCharacterId;
+				}
+			}
 
 			Runner.SetPlayerObject(Runner.LocalPlayer, playerObject);
-			LogRespawn($"Spawn local player {FormatPlayer(Runner.LocalPlayer)} at {position}");
+			LogRespawn($"Spawn local player {FormatPlayer(Runner.LocalPlayer)} at {position} | character={selectedCharacterId}");
 		}
 
 		public bool EnsureLocalPlayerSpawned()

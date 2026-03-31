@@ -37,6 +37,8 @@ namespace SigilWarAscend.Gameplay
 
 		[Networked, Capacity(24), OnChangedRender(nameof(OnNicknameChanged))]
 		public string Nickname { get; set; }
+		[Networked, Capacity(32)]
+		public string SelectedCharacterId { get; set; }
 		[Networked, OnChangedRender(nameof(OnCollectedPickupsChanged))]
 		public int CollectedPickups { get; set; }
 		[Networked]

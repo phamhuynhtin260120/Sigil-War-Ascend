@@ -87,6 +87,12 @@ namespace SigilWarAscend.UI
 			FlowState.NextSceneName = nextSceneName ?? string.Empty;
 		}
 
+		public static void MarkLaunchConsumed()
+		{
+			LaunchData.HasPendingLaunch = false;
+			LaunchData.IsLaunchDataComplete = false;
+		}
+
 		public static void SetSceneFlow(string lastSceneName, string nextSceneName)
 		{
 			FlowState.LastSceneName = lastSceneName ?? string.Empty;

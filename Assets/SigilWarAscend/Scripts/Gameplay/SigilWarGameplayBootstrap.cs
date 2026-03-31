@@ -81,7 +81,7 @@ namespace SigilWarAscend.Gameplay
 			EnsureGameplayHudController();
 			SigilWarSessionData.MarkMatchStarted();
 			SigilWarSessionData.SetSceneFlow(SceneManager.GetActiveScene().name, string.Empty);
-			SigilWarSessionData.ClearLaunchData();
+			SigilWarSessionData.MarkLaunchConsumed();
 			SetGameplayCursorLocked(false);
 		}
 
