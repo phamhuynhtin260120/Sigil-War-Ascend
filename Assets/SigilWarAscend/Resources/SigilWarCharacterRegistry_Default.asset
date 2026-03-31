@@ -14,18 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarCharacterRegistry
   Characters:
   - CharacterId: Character1
-    DisplayName: DiLuc
-    PlayerPrefab: {fileID: 844468418994539052, guid: 13aacce7fb9314c098792f978662d927,
-      type: 3}
-  - CharacterId: Character2
     DisplayName: Kazuha
     PlayerPrefab: {fileID: 844468418994539052, guid: d3af8629cd69e4afbb0d82e9942a2c4b,
       type: 3}
+  - CharacterId: Character2
+    DisplayName: Xiao
+    PlayerPrefab: {fileID: 844468418994539052, guid: fa26916578cf6cb4faa4556d251e0922,
+      type: 3}
   - CharacterId: Character3
-    DisplayName: Kaeya
+    DisplayName: Yelan
     PlayerPrefab: {fileID: 844468418994539052, guid: 5bc3c1921a2094b3399951f10df90cae,
       type: 3}
   - CharacterId: Character4
-    DisplayName: Kaeya
-    PlayerPrefab: {fileID: 844468418994539052, guid: 5bc3c1921a2094b3399951f10df90cae,
+    DisplayName: Arataki Itto
+    PlayerPrefab: {fileID: 844468418994539052, guid: 13aacce7fb9314c098792f978662d927,
       type: 3}

@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 2343276942515268270}
   - component: {fileID: 281636211756945643}
   - component: {fileID: 8233979684824962329}
-  - component: {fileID: 2196772792234419611}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -46,16 +45,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea71509bf26d7465293f5bd980e7d735, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarGameManager
-  PreparationDuration: 10
-  LanePhaseDuration: 120
-  PortalPhaseDuration: 90
-  CorePhaseDuration: 120
-  CoreControlDuration: 20
-  RespawnDelay: 5
-  AllowRespawnBeforeCorePhase: 1
-  AllowRespawnDuringCorePhase: 0
+  _matchRulesConfig: {fileID: 0}
+  GameplayTextConfig: {fileID: 0}
   PlayerPrefab: {fileID: 844468418994539052, guid: c8bb9b4b1b00145a6909e1f1a9f952b1,
     type: 3}
+  CharacterRegistry: {fileID: 0}
   LaneSpawnGroups:
   - Lane: 0
     SpawnPoints:
@@ -63,6 +57,9 @@ MonoBehaviour:
   Portals:
   - {fileID: 0}
   CoreObjective: {fileID: 0}
+  EnemySpawnController: {fileID: 0}
+  BossSpawnController: {fileID: 0}
+  ItemSpawnController: {fileID: 0}
   DefaultSpawnPoint: {fileID: 2343276942515268270}
   _CurrentPhase: 0
   _ArePortalsOpen:
@@ -70,6 +67,9 @@ MonoBehaviour:
   _IsCoreSpawned:
     _value: 0
   _VictoryReason: 0
+  _IsReadyUpActive:
+    _value: 0
+  _ReadyPlayerMask: 0
   EnableDebugLogs: 1
   LogPhaseFlow: 1
   LogRespawnFlow: 1
@@ -94,23 +94,3 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 281636211756945643}
   ForceRemoteRenderTimeframe: 0
---- !u!114 &2196772792234419611
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2047702604654335190}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 487099c6b876a4a8ab6a41f45c191303, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarLocalTestPlayerSpawner
-  GameManager: {fileID: 281636211756945643}
-  PlayerPrefabSlots:
-  - Prefab: {fileID: 844468418994539052, guid: d3af8629cd69e4afbb0d82e9942a2c4b, type: 3}
-    UseForLocalTest: 1
-  - Prefab: {fileID: 844468418994539052, guid: c8bb9b4b1b00145a6909e1f1a9f952b1, type: 3}
-    UseForLocalTest: 0
-  LocalTestPlayerPrefabIndex: 0
-  ApplyOnAwake: 1

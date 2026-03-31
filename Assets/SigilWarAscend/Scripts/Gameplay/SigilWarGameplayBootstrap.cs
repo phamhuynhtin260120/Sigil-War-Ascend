@@ -77,8 +77,7 @@ namespace SigilWarAscend.Gameplay
 				return;
 			}
 
-			EnsureReadyUpUiController();
-			EnsureGameplayHudController();
+			BindSceneUiControllers();
 			SigilWarSessionData.MarkMatchStarted();
 			SigilWarSessionData.SetSceneFlow(SceneManager.GetActiveScene().name, string.Empty);
 			SigilWarSessionData.MarkLaunchConsumed();
@@ -89,8 +88,7 @@ namespace SigilWarAscend.Gameplay
 		{
 			if (_runnerInstance != null)
 			{
-				EnsureReadyUpUiController();
-				EnsureGameplayHudController();
+				BindSceneUiControllers();
 			}
 		}
 
@@ -101,29 +99,16 @@ namespace SigilWarAscend.Gameplay
 			SceneManager.LoadScene(MainMenuSceneName);
 		}
 
-		private void EnsureReadyUpUiController()
+		private void BindSceneUiControllers()
 		{
-			if (_readyUpUiController != null)
-				return;
-
-			_readyUpUiController = FindFirstObjectByType<SigilWarReadyUpUiController>();
 			if (_readyUpUiController == null)
 			{
-				GameObject readyUpRoot = new GameObject("SigilWarReadyUpUi");
-				_readyUpUiController = readyUpRoot.AddComponent<SigilWarReadyUpUiController>();
+				_readyUpUiController = FindFirstObjectByType<SigilWarReadyUpUiController>();
 			}
-		}
 
-		private void EnsureGameplayHudController()
-		{
-			if (_gameplayHudController != null)
-				return;
-
-			_gameplayHudController = FindFirstObjectByType<SigilWarGameplayHudController>();
 			if (_gameplayHudController == null)
 			{
-				GameObject hudRoot = new GameObject("SigilWarGameplayHud");
-				_gameplayHudController = hudRoot.AddComponent<SigilWarGameplayHudController>();
+				_gameplayHudController = FindFirstObjectByType<SigilWarGameplayHudController>();
 			}
 		}
 
