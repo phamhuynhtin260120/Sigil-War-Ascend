@@ -2075,6 +2075,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.UI.SigilWarGameMenu
   GameModeIdentifier: SigilWarAscend
   MaxPlayerCount: 4
+  CharacterSelectSceneName: CharacterSelect
   GameplaySceneName: GamePlay
   ForceSinglePlayer: 0
   PanelGroup: {fileID: 615562115}

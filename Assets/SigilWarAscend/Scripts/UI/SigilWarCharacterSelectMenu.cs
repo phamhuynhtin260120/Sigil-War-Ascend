@@ -24,6 +24,7 @@ namespace SigilWarAscend.UI
 		public Button CharacterButton1;
 		public Button CharacterButton2;
 		public Button CharacterButton3;
+		public Button CharacterButton4;
 		public Button BackButton;
 
 		private string _selectedCharacterId = string.Empty;
@@ -50,6 +51,7 @@ namespace SigilWarAscend.UI
 			RegisterButton(CharacterButton1, () => SelectCharacter("Character1"));
 			RegisterButton(CharacterButton2, () => SelectCharacter("Character2"));
 			RegisterButton(CharacterButton3, () => SelectCharacter("Character3"));
+			RegisterButton(CharacterButton4, () => SelectCharacter("Character4"));
 			RegisterButton(BackButton, BackToMainMenu);
 			RegisterButton(ContinueButton, ContinueToGameplay);
 		}

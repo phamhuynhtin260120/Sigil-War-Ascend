@@ -35,7 +35,6 @@ namespace SigilWarAscend.Gameplay
 				return;
 
 			float jumpImpulse = 0f;
-
 			if (player.Health != null && player.Health.IsAlive && kcc.IsGrounded && input.Jump)
 			{
 				jumpImpulse = JumpImpulse;
@@ -74,11 +73,11 @@ namespace SigilWarAscend.Gameplay
 					Quaternion nextRotation = Quaternion.Lerp(currentRotation, targetRotation, RotationSpeed * player.Runner.DeltaTime);
 					kcc.SetLookRotation(nextRotation.eulerAngles);
 				}
+
 				acceleration = kcc.IsGrounded ? GroundAcceleration : AirAcceleration;
 			}
 
 			_moveVelocity = Vector3.Lerp(_moveVelocity, desiredMoveVelocity, acceleration * player.Runner.DeltaTime);
-
 			if (kcc.ProjectOnGround(_moveVelocity, out Vector3 projectedVector))
 			{
 				_moveVelocity = projectedVector;
