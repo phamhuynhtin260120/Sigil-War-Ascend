@@ -3628,7 +3628,7 @@ GameObject:
   - component: {fileID: 43843547825203713}
   - component: {fileID: 1485989100425549848}
   m_Layer: 0
-  m_Name: HacVu
+  m_Name: Character_01
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

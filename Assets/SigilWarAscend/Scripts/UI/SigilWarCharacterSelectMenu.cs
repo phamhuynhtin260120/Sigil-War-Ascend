@@ -21,9 +21,9 @@ namespace SigilWarAscend.UI
 		public Button ContinueButton;
 
 		[Header("Character Buttons")]
-		public Button BladeDancerButton;
-		public Button WardenButton;
-		public Button ArcanistButton;
+		public Button CharacterButton1;
+		public Button CharacterButton2;
+		public Button CharacterButton3;
 		public Button BackButton;
 
 		private string _selectedCharacterId = string.Empty;
@@ -47,9 +47,9 @@ namespace SigilWarAscend.UI
 
 		private void WireButtons()
 		{
-			RegisterButton(BladeDancerButton, () => SelectCharacter("BladeDancer"));
-			RegisterButton(WardenButton, () => SelectCharacter("Warden"));
-			RegisterButton(ArcanistButton, () => SelectCharacter("Arcanist"));
+			RegisterButton(CharacterButton1, () => SelectCharacter("Character1"));
+			RegisterButton(CharacterButton2, () => SelectCharacter("Character2"));
+			RegisterButton(CharacterButton3, () => SelectCharacter("Character3"));
 			RegisterButton(BackButton, BackToMainMenu);
 			RegisterButton(ContinueButton, ContinueToGameplay);
 		}

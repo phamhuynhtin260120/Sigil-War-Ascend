@@ -100091,6 +100091,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 281636211756945643, guid: 7cb097e8a3961fa45b2d89ebd23272c7,
         type: 3}
+      propertyPath: CharacterRegistry
+      value: 
+      objectReference: {fileID: 11400000, guid: ad4d98aa35ded49ee98e6c029aafbe37,
+        type: 2}
+    - target: {fileID: 281636211756945643, guid: 7cb097e8a3961fa45b2d89ebd23272c7,
+        type: 3}
       propertyPath: CorePhaseDuration
       value: 120
       objectReference: {fileID: 0}

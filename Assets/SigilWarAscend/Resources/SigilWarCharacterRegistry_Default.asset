@@ -13,11 +13,15 @@ MonoBehaviour:
   m_Name: SigilWarCharacterRegistry_Default
   m_EditorClassIdentifier: Assembly-CSharp::SigilWarAscend.Gameplay.SigilWarCharacterRegistry
   Characters:
-  - CharacterId: 0
+  - CharacterId: Character1
     DisplayName: Kazuha
     PlayerPrefab: {fileID: 844468418994539052, guid: d3af8629cd69e4afbb0d82e9942a2c4b,
       type: 3}
-  - CharacterId: 1
+  - CharacterId: Character2
     DisplayName: Hac Vu
     PlayerPrefab: {fileID: 844468418994539052, guid: c8bb9b4b1b00145a6909e1f1a9f952b1,
+      type: 3}
+  - CharacterId: Character3
+    DisplayName: Hac Vu
+    PlayerPrefab: {fileID: 844468418994539052, guid: 5bc3c1921a2094b3399951f10df90cae,
       type: 3}
