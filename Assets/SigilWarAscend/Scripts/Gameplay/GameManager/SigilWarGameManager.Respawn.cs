@@ -58,8 +58,15 @@ namespace SigilWarAscend.Gameplay
 				return;
 			}
 
-			_pendingRespawns[playerRef] = TickTimer.CreateFromSeconds(Runner, RespawnDelay);
-			LogRespawn($"Schedule respawn for {FormatPlayer(playerRef)} | delay={FormatTime(RespawnDelay)}");
+			float respawnDelay = GetRespawnDelayForCurrentPhase();
+			_pendingRespawns[playerRef] = TickTimer.CreateFromSeconds(Runner, respawnDelay);
+			var playerObject = Runner.GetPlayerObject(playerRef);
+			if (playerObject != null)
+			{
+				var player = playerObject.GetComponent<SigilWarPlayer>();
+				player?.StartRespawnCountdown(respawnDelay);
+			}
+			LogRespawn($"Schedule respawn for {FormatPlayer(playerRef)} | phase={CurrentPhase} | delay={FormatTime(respawnDelay)}");
 		}
 
 		private void RespawnPlayer(PlayerRef playerRef)
@@ -92,6 +99,23 @@ namespace SigilWarAscend.Gameplay
 					return AllowRespawnDuringCorePhase;
 				default:
 					return false;
+			}
+		}
+
+		private float GetRespawnDelayForCurrentPhase()
+		{
+			switch (CurrentPhase)
+			{
+				case MatchPhase.Preparation:
+					return PreparationRespawnDelay;
+				case MatchPhase.LanePhase:
+					return LanePhaseRespawnDelay;
+				case MatchPhase.PortalPhase:
+					return PortalPhaseRespawnDelay;
+				case MatchPhase.CorePhase:
+					return CorePhaseRespawnDelay;
+				default:
+					return PreparationRespawnDelay;
 			}
 		}
 

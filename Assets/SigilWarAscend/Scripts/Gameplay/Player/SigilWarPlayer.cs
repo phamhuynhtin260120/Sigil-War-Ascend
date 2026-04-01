@@ -43,6 +43,10 @@ namespace SigilWarAscend.Gameplay
 		public int CollectedPickups { get; set; }
 		[Networked]
 		public int PlayerKills { get; set; }
+		[Networked]
+		private NetworkBool IsWaitingForRespawn { get; set; }
+		[Networked]
+		private TickTimer RespawnTimer { get; set; }
 		[Networked, OnChangedRender(nameof(OnJumpingChanged))]
 		private NetworkBool IsJumping { get; set; }
 		[Networked]
@@ -70,6 +74,7 @@ namespace SigilWarAscend.Gameplay
 		private int _animIDFreeFall;
 		private int _animIDMotionSpeed;
 		private int _animIDDead;
+		private int _animIDHit;
 		private Camera _resolvedMainCamera;
 
 		public PlayerRef OwnerPlayerRef => Object != null ? Object.StateAuthority : PlayerRef.None;
@@ -78,6 +83,8 @@ namespace SigilWarAscend.Gameplay
 		public int MaxHealth => Health != null ? Health.MaxHealth : 0;
 		public float HealthNormalized => Health != null ? Health.HealthNormalized : 0f;
 		public bool IsLocalPlayer => IsLocallyControlled;
+		public bool IsRespawnPending => IsWaitingForRespawn;
+		public float RemainingRespawnTime => Runner != null && IsWaitingForRespawn ? Mathf.Max(0f, RespawnTimer.RemainingTime(Runner) ?? 0f) : 0f;
 		internal bool IsLocallyControlled => Object != null && (HasInputAuthority || HasStateAuthority);
 
 		internal bool IsAttackActive
@@ -184,8 +191,16 @@ namespace SigilWarAscend.Gameplay
 				Combat?.TickStateAuthority(this);
 			}
 
-			SigilWarGameplayInput input = CanProcessGameplayInput() ? PlayerInput.CurrentInput : default;
-			Movement?.Tick(this, input);
+			bool canRunMovement = Health != null && Health.IsAlive;
+			SigilWarGameplayInput input = canRunMovement && CanProcessGameplayInput() ? PlayerInput.CurrentInput : default;
+			if (canRunMovement)
+			{
+				Movement?.Tick(this, input);
+			}
+			else
+			{
+				Movement?.ResetState();
+			}
 
 			if (KCC != null && KCC.IsGrounded)
 			{
@@ -274,6 +289,7 @@ namespace SigilWarAscend.Gameplay
 		public void HandleRespawn(Vector3 position, Quaternion rotation)
 		{
 			EnsurePlayerComponents();
+			ClearRespawnCountdown();
 
 			if (Health != null)
 			{
@@ -292,8 +308,7 @@ namespace SigilWarAscend.Gameplay
 				transform.SetPositionAndRotation(position, rotation);
 			}
 
-			Movement?.ResetState();
-			Combat?.ResetState(this);
+			ResetTransientGameplayState();
 			ResetPresentationStateOnRespawn();
 			_deathReported = false;
 		}
@@ -367,6 +382,7 @@ namespace SigilWarAscend.Gameplay
 				return;
 
 			_deathReported = true;
+			ResetGameplayStateOnDeath();
 
 			if (_gameManager != null)
 			{
@@ -413,14 +429,6 @@ namespace SigilWarAscend.Gameplay
 			return Cursor.lockState == CursorLockMode.Locked;
 		}
 
-		private bool CanProcessCamera()
-		{
-			if (CanOwnCamera() == false)
-				return false;
-
-			return Cursor.lockState == CursorLockMode.Locked;
-		}
-
 		private bool CanOwnCamera()
 		{
 			if (IsLocallyControlled == false)
@@ -461,6 +469,7 @@ namespace SigilWarAscend.Gameplay
 			_animIDFreeFall = Animator.StringToHash("FreeFall");
 			_animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
 			_animIDDead = Animator.StringToHash("Dead");
+			_animIDHit = Animator.StringToHash("Hit");
 		}
 
 		private void EnsurePlayerComponents()
@@ -498,6 +507,18 @@ namespace SigilWarAscend.Gameplay
 			}
 		}
 
+		private void ResetGameplayStateOnDeath()
+		{
+			IsJumping = false;
+			ResetTransientGameplayState();
+		}
+
+		private void ResetTransientGameplayState()
+		{
+			Movement?.ResetState();
+			Combat?.ResetState(this);
+		}
+
 		private void OnAttackVisualChanged()
 		{
 			Combat?.ApplyVisualTrigger(this);
@@ -532,6 +553,35 @@ namespace SigilWarAscend.Gameplay
 			}
 		}
 
+		internal void PlayHitReaction()
+		{
+			if (Animator == null || Health == null || Health.IsAlive == false)
+				return;
+
+			if (HasAnimatorParameter("Hit", AnimatorControllerParameterType.Trigger) == false)
+				return;
+
+			Animator.SetTrigger(_animIDHit);
+		}
+
+		internal void StartRespawnCountdown(float respawnDelay)
+		{
+			if (Runner == null || respawnDelay <= 0f)
+			{
+				ClearRespawnCountdown();
+				return;
+			}
+
+			IsWaitingForRespawn = true;
+			RespawnTimer = TickTimer.CreateFromSeconds(Runner, respawnDelay);
+		}
+
+		internal void ClearRespawnCountdown()
+		{
+			IsWaitingForRespawn = false;
+			RespawnTimer = default;
+		}
+
 		private void OnNicknameChanged()
 		{
 			if (Nameplate == null)
@@ -545,6 +595,20 @@ namespace SigilWarAscend.Gameplay
 
 			Nameplate.enabled = true;
 			Nameplate.SetNickname(Nickname);
+		}
+
+		private bool HasAnimatorParameter(string parameterName, AnimatorControllerParameterType expectedType)
+		{
+			if (Animator == null || string.IsNullOrEmpty(parameterName))
+				return false;
+
+			foreach (var parameter in Animator.parameters)
+			{
+				if (parameter.name == parameterName && parameter.type == expectedType)
+					return true;
+			}
+
+			return false;
 		}
 
 		private void ResetPresentationStateOnRespawn()

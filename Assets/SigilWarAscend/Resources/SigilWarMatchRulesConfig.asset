@@ -17,6 +17,9 @@ MonoBehaviour:
   PortalPhaseDuration: 90
   CorePhaseDuration: 120
   CoreControlDuration: 20
-  RespawnDelay: 5
+  PreparationRespawnDelay: 10
+  LanePhaseRespawnDelay: 15
+  PortalPhaseRespawnDelay: 20
+  CorePhaseRespawnDelay: 5
   AllowRespawnBeforeCorePhase: 1
-  AllowRespawnDuringCorePhase: 0
+  AllowRespawnDuringCorePhase: 1

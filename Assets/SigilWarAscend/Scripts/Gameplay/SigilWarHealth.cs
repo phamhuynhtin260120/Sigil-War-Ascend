@@ -26,6 +26,7 @@ namespace SigilWarAscend.Gameplay
 		public bool LogLifecycleFlow = true;
 
 		private const string LogPrefix = "[SigilWarHealth]";
+		private int _visibleHealth;
 
 		public int MaxHealth => InitialHealth;
 		public int CurrentHealth => NetworkHealth;
@@ -69,10 +70,19 @@ namespace SigilWarAscend.Gameplay
 			{
 				Revive();
 			}
+
+			_visibleHealth = NetworkHealth;
 		}
 
 		public override void Render()
 		{
+			if (NetworkHealth < _visibleHealth && NetworkHealth > 0)
+			{
+				var player = GetComponentInParent<SigilWarPlayer>();
+				player?.PlayHitReaction();
+			}
+
+			_visibleHealth = NetworkHealth;
 			RefreshPresentation();
 		}
 

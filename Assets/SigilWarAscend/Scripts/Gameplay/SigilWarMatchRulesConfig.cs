@@ -17,7 +17,12 @@ namespace SigilWarAscend.Gameplay
 		public float PortalPhaseDuration = 90f;
 		public float CorePhaseDuration = 120f;
 		public float CoreControlDuration = 20f;
-		public float RespawnDelay = 5f;
+
+		[Header("Respawn Delays")]
+		public float PreparationRespawnDelay = 10f;
+		public float LanePhaseRespawnDelay = 15f;
+		public float PortalPhaseRespawnDelay = 20f;
+		public float CorePhaseRespawnDelay = 5f;
 
 		[Header("Respawn Rules")]
 		public bool AllowRespawnBeforeCorePhase = true;

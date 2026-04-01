@@ -21,26 +21,43 @@ namespace SigilWarAscend.UI
 		[SerializeField] private TextMeshProUGUI _matchTitleText;
 		[SerializeField] private TextMeshProUGUI _matchStatsText;
 
+		[Header("Respawn Overlay")]
+		[SerializeField] private CanvasGroup _respawnOverlayGroup;
+		[SerializeField] private TextMeshProUGUI _respawnTitleText;
+		[SerializeField] private TextMeshProUGUI _respawnCountdownText;
+		[SerializeField] private TextMeshProUGUI _respawnDetailText;
+
 		private SigilWarGameManager _gameManager;
 		private SigilWarPlayer _localPlayer;
 
 		private void Awake()
 		{
 			SetVisible(false);
+			SetRespawnOverlayVisible(false);
 		}
 
 		private void Update()
 		{
 			ResolveReferences();
-			if (_gameManager == null)
+			if (CanReadGameplayState(_gameManager) == false)
 			{
 				SetVisible(false);
+				SetRespawnOverlayVisible(false);
 				return;
 			}
 
-			SetVisible(true);
+			bool canReadLocalPlayer = CanReadPlayerState(_localPlayer);
+			bool showRespawnOverlay = canReadLocalPlayer && _localPlayer.IsAlive == false && _localPlayer.IsRespawnPending;
+			bool showSceneUi = canReadLocalPlayer == false || showRespawnOverlay == false;
+
+			SetVisible(showSceneUi);
+			SetRespawnOverlayVisible(showRespawnOverlay);
 			RefreshLocalPlayerPanel();
 			RefreshMatchPanel();
+			if (showRespawnOverlay)
+			{
+				RefreshRespawnOverlay();
+			}
 		}
 
 		private void ResolveReferences()
@@ -79,14 +96,14 @@ namespace SigilWarAscend.UI
 		{
 			if (_playerTitleText != null)
 			{
-				_playerTitleText.text = _localPlayer != null && string.IsNullOrWhiteSpace(_localPlayer.Nickname) == false
+				_playerTitleText.text = CanReadPlayerState(_localPlayer) && string.IsNullOrWhiteSpace(_localPlayer.Nickname) == false
 					? _localPlayer.Nickname
 					: "Dang tim local player...";
 			}
 
 			if (_playerStatsText != null)
 			{
-				if (_localPlayer == null)
+				if (CanReadPlayerState(_localPlayer) == false)
 				{
 					_playerStatsText.text = "Kills: --\nPickups: --\nState: --";
 				}
@@ -101,14 +118,14 @@ namespace SigilWarAscend.UI
 
 			if (_healthText != null)
 			{
-				_healthText.text = _localPlayer == null
+				_healthText.text = CanReadPlayerState(_localPlayer) == false
 					? "HP: --/--"
 					: $"HP: {_localPlayer.CurrentHealth}/{Mathf.Max(_localPlayer.MaxHealth, 0)}";
 			}
 
 			if (_healthFillImage != null)
 			{
-				float fill = _localPlayer != null ? Mathf.Clamp01(_localPlayer.HealthNormalized) : 0f;
+				float fill = CanReadPlayerState(_localPlayer) ? Mathf.Clamp01(_localPlayer.HealthNormalized) : 0f;
 				_healthFillImage.fillAmount = fill;
 				_healthFillImage.color = Color.Lerp(new Color(0.82f, 0.2f, 0.18f), new Color(0.22f, 0.84f, 0.36f), fill);
 			}
@@ -156,6 +173,38 @@ namespace SigilWarAscend.UI
 			_rootGroup.blocksRaycasts = false;
 		}
 
+		private void RefreshRespawnOverlay()
+		{
+			if (CanReadPlayerState(_localPlayer) == false || _localPlayer.IsAlive || _localPlayer.IsRespawnPending == false)
+				return;
+
+			float remaining = _localPlayer.RemainingRespawnTime;
+			if (_respawnTitleText != null)
+			{
+				_respawnTitleText.text = "You Are Defeated";
+			}
+
+			if (_respawnCountdownText != null)
+			{
+				_respawnCountdownText.text = FormatTime(remaining);
+			}
+
+			if (_respawnDetailText != null && _gameManager != null)
+			{
+				_respawnDetailText.text = $"Respawn in {FormatPhase(_gameManager.CurrentPhase)}";
+			}
+		}
+
+		private void SetRespawnOverlayVisible(bool isVisible)
+		{
+			if (_respawnOverlayGroup == null)
+				return;
+
+			_respawnOverlayGroup.alpha = isVisible ? 1f : 0f;
+			_respawnOverlayGroup.interactable = false;
+			_respawnOverlayGroup.blocksRaycasts = false;
+		}
+
 		private static string FormatPhase(MatchPhase phase)
 		{
 			return phase switch
@@ -176,6 +225,22 @@ namespace SigilWarAscend.UI
 			int minutes = safeSeconds / 60;
 			int remainingSeconds = safeSeconds % 60;
 			return $"{minutes:00}:{remainingSeconds:00}";
+		}
+
+		private static bool CanReadGameplayState(SigilWarGameManager gameManager)
+		{
+			return gameManager != null &&
+				gameManager.Object != null &&
+				gameManager.Object.IsValid &&
+				gameManager.Runner != null;
+		}
+
+		private static bool CanReadPlayerState(SigilWarPlayer player)
+		{
+			return player != null &&
+				player.Object != null &&
+				player.Object.IsValid &&
+				player.Runner != null;
 		}
 
 	}

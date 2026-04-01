@@ -77,7 +77,10 @@ namespace SigilWarAscend.Gameplay
 				acceleration = kcc.IsGrounded ? GroundAcceleration : AirAcceleration;
 			}
 
-			_moveVelocity = Vector3.Lerp(_moveVelocity, desiredMoveVelocity, acceleration * player.Runner.DeltaTime);
+			_moveVelocity = Vector3.MoveTowards(
+				_moveVelocity,
+				desiredMoveVelocity,
+				acceleration * player.Runner.DeltaTime);
 			if (kcc.ProjectOnGround(_moveVelocity, out Vector3 projectedVector))
 			{
 				_moveVelocity = projectedVector;

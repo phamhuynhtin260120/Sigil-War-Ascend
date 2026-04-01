@@ -16,7 +16,10 @@ namespace SigilWarAscend.Gameplay
 		private const float DefaultPortalPhaseDuration = 90f;
 		private const float DefaultCorePhaseDuration = 120f;
 		private const float DefaultCoreControlDuration = 20f;
-		private const float DefaultRespawnDelay = 5f;
+		private const float DefaultPreparationRespawnDelay = 10f;
+		private const float DefaultLanePhaseRespawnDelay = 15f;
+		private const float DefaultPortalPhaseRespawnDelay = 20f;
+		private const float DefaultCorePhaseRespawnDelay = 5f;
 		private const bool DefaultAllowRespawnBeforeCorePhase = true;
 		private const bool DefaultAllowRespawnDuringCorePhase = false;
 
@@ -78,7 +81,10 @@ namespace SigilWarAscend.Gameplay
 		public float PortalPhaseDuration => MatchRulesConfig != null ? MatchRulesConfig.PortalPhaseDuration : DefaultPortalPhaseDuration;
 		public float CorePhaseDuration => MatchRulesConfig != null ? MatchRulesConfig.CorePhaseDuration : DefaultCorePhaseDuration;
 		public float CoreControlDuration => MatchRulesConfig != null ? MatchRulesConfig.CoreControlDuration : DefaultCoreControlDuration;
-		public float RespawnDelay => MatchRulesConfig != null ? MatchRulesConfig.RespawnDelay : DefaultRespawnDelay;
+		public float PreparationRespawnDelay => MatchRulesConfig != null ? MatchRulesConfig.PreparationRespawnDelay : DefaultPreparationRespawnDelay;
+		public float LanePhaseRespawnDelay => MatchRulesConfig != null ? MatchRulesConfig.LanePhaseRespawnDelay : DefaultLanePhaseRespawnDelay;
+		public float PortalPhaseRespawnDelay => MatchRulesConfig != null ? MatchRulesConfig.PortalPhaseRespawnDelay : DefaultPortalPhaseRespawnDelay;
+		public float CorePhaseRespawnDelay => MatchRulesConfig != null ? MatchRulesConfig.CorePhaseRespawnDelay : DefaultCorePhaseRespawnDelay;
 		public bool AllowRespawnBeforeCorePhase => MatchRulesConfig != null ? MatchRulesConfig.AllowRespawnBeforeCorePhase : DefaultAllowRespawnBeforeCorePhase;
 		public bool AllowRespawnDuringCorePhase => MatchRulesConfig != null ? MatchRulesConfig.AllowRespawnDuringCorePhase : DefaultAllowRespawnDuringCorePhase;
 		public float RemainingPhaseTime => PhaseTimer.RemainingTime(Runner) ?? 0f;
