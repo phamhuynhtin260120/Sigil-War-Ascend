@@ -21,11 +21,22 @@ namespace SigilWarAscend.Gameplay
 		public float AirAcceleration = 25f;
 		public float AirDeceleration = 1.3f;
 
+		[Header("Input Forgiveness")]
+		public float CoyoteTime = 0.12f;
+		public float JumpBufferTime = 0.12f;
+		public float AttackBufferTime = 0.18f;
+
 		private Vector3 _moveVelocity;
+		private float _coyoteTimer;
+		private float _jumpBufferTimer;
+		private float _attackBufferTimer;
 
 		public void ResetState()
 		{
 			_moveVelocity = Vector3.zero;
+			_coyoteTimer = 0f;
+			_jumpBufferTimer = 0f;
+			_attackBufferTimer = 0f;
 		}
 
 		public void Tick(SigilWarPlayer player, SigilWarGameplayInput input)
@@ -34,30 +45,40 @@ namespace SigilWarAscend.Gameplay
 			if (kcc == null)
 				return;
 
+			float deltaTime = player.Runner.DeltaTime;
+			UpdateInputGraceTimers(kcc.IsGrounded, input, deltaTime);
+
 			float jumpImpulse = 0f;
-			if (player.Health != null && player.Health.IsAlive && kcc.IsGrounded && input.Jump)
+			if (player.Health != null && player.Health.IsAlive && CanConsumeBufferedJump())
 			{
-				jumpImpulse = JumpImpulse;
+				jumpImpulse = JumpImpulse * player.GetJumpMultiplier();
 				player.IsJumpingValue = true;
+				_jumpBufferTimer = 0f;
+				_coyoteTimer = 0f;
 			}
 
 			kcc.SetGravity(kcc.RealVelocity.y >= 0f ? UpGravity : DownGravity);
 
-			float speed = input.Sprint ? SprintSpeed : WalkSpeed;
+			float speed = input.Sprint
+				? SprintSpeed * player.GetSprintSpeedMultiplier()
+				: WalkSpeed * player.GetWalkSpeedMultiplier();
 			Quaternion lookRotation = Quaternion.Euler(0f, input.LookRotation.y, 0f);
 			Vector3 moveDirection = lookRotation * new Vector3(input.MoveDirection.x, 0f, input.MoveDirection.y);
 			Vector3 desiredMoveVelocity = moveDirection * speed;
 
-			bool canAttack = kcc.IsGrounded;
-			if (player.HasStateAuthority && input.Attack && player.Combat != null && canAttack)
+			if (player.HasStateAuthority && player.Combat != null && CanConsumeBufferedAttack(kcc.IsGrounded))
 			{
 				player.Combat.TryStartAttack(player, input);
+				_attackBufferTimer = player.IsAttackActive ? 0f : _attackBufferTimer;
 			}
 
 			float acceleration;
 			if (player.IsAttackActive)
 			{
-				desiredMoveVelocity = Vector3.zero;
+				float attackMoveSpeedMultiplier = player.Combat != null
+					? player.Combat.GetAttackMoveSpeedMultiplier(player)
+					: 0f;
+				desiredMoveVelocity *= attackMoveSpeedMultiplier;
 			}
 
 			if (desiredMoveVelocity == Vector3.zero)
@@ -70,17 +91,20 @@ namespace SigilWarAscend.Gameplay
 				{
 					Quaternion currentRotation = kcc.TransformRotation;
 					Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
-					Quaternion nextRotation = Quaternion.Lerp(currentRotation, targetRotation, RotationSpeed * player.Runner.DeltaTime);
+					float rotationSpeed = RotationSpeed * player.GetRotationSpeedMultiplier();
+					Quaternion nextRotation = Quaternion.Lerp(currentRotation, targetRotation, rotationSpeed * deltaTime);
 					kcc.SetLookRotation(nextRotation.eulerAngles);
 				}
 
 				acceleration = kcc.IsGrounded ? GroundAcceleration : AirAcceleration;
 			}
 
+			acceleration *= player.GetAccelerationMultiplier();
+
 			_moveVelocity = Vector3.MoveTowards(
 				_moveVelocity,
 				desiredMoveVelocity,
-				acceleration * player.Runner.DeltaTime);
+				acceleration * deltaTime);
 			if (kcc.ProjectOnGround(_moveVelocity, out Vector3 projectedVector))
 			{
 				_moveVelocity = projectedVector;
@@ -88,6 +112,49 @@ namespace SigilWarAscend.Gameplay
 
 			Vector3 attackVelocity = player.Combat != null ? player.Combat.GetAttackVelocity(player) : Vector3.zero;
 			kcc.Move(_moveVelocity + attackVelocity, jumpImpulse);
+		}
+
+		private void UpdateInputGraceTimers(bool isGrounded, SigilWarGameplayInput input, float deltaTime)
+		{
+			if (isGrounded)
+			{
+				_coyoteTimer = CoyoteTime;
+			}
+			else
+			{
+				_coyoteTimer = Mathf.Max(0f, _coyoteTimer - deltaTime);
+			}
+
+			if (input.Jump)
+			{
+				_jumpBufferTimer = JumpBufferTime;
+			}
+			else
+			{
+				_jumpBufferTimer = Mathf.Max(0f, _jumpBufferTimer - deltaTime);
+			}
+
+			if (input.Attack)
+			{
+				_attackBufferTimer = AttackBufferTime;
+			}
+			else
+			{
+				_attackBufferTimer = Mathf.Max(0f, _attackBufferTimer - deltaTime);
+			}
+		}
+
+		private bool CanConsumeBufferedJump()
+		{
+			return _jumpBufferTimer > 0f && _coyoteTimer > 0f;
+		}
+
+		private bool CanConsumeBufferedAttack(bool isGrounded)
+		{
+			if (_attackBufferTimer <= 0f)
+				return false;
+
+			return isGrounded;
 		}
 	}
 }

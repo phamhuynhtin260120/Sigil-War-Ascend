@@ -35,14 +35,25 @@ namespace SigilWarAscend.Gameplay
 		[Header("VFX")]
 		public ParticleSystem DustParticles;
 
+		[Header("Camera Feel")]
+		public float BaseFieldOfView = 60f;
+		public float SprintFieldOfViewBoost = 4f;
+		public float AttackFieldOfViewBoost = 2.5f;
+		public float HitFieldOfViewPenalty = 5f;
+		public float FieldOfViewLerpSpeed = 10f;
+		public float AttackFeedbackDuration = 0.12f;
+		public float HitFeedbackDuration = 0.18f;
+
 		[Networked, Capacity(24), OnChangedRender(nameof(OnNicknameChanged))]
 		public string Nickname { get; set; }
-		[Networked, Capacity(32)]
+		[Networked, Capacity(32), OnChangedRender(nameof(OnSelectedCharacterChanged))]
 		public string SelectedCharacterId { get; set; }
 		[Networked, OnChangedRender(nameof(OnCollectedPickupsChanged))]
 		public int CollectedPickups { get; set; }
 		[Networked]
 		public int PlayerKills { get; set; }
+		[Networked]
+		public int PlayerDeaths { get; set; }
 		[Networked]
 		private NetworkBool IsWaitingForRespawn { get; set; }
 		[Networked]
@@ -76,6 +87,9 @@ namespace SigilWarAscend.Gameplay
 		private int _animIDDead;
 		private int _animIDHit;
 		private Camera _resolvedMainCamera;
+		private SigilWarCharacterDefinition _resolvedCharacterDefinition;
+		private float _localAttackFeedbackTimer;
+		private float _localHitFeedbackTimer;
 
 		public PlayerRef OwnerPlayerRef => Object != null ? Object.StateAuthority : PlayerRef.None;
 		public bool IsAlive => Health != null && Health.IsAlive;
@@ -170,6 +184,7 @@ namespace SigilWarAscend.Gameplay
 			}
 
 			OnNicknameChanged();
+			OnSelectedCharacterChanged();
 			_visibleAttackVisualCounter = AttackVisualCounter;
 		}
 
@@ -268,6 +283,8 @@ namespace SigilWarAscend.Gameplay
 			{
 				_resolvedMainCamera.transform.SetPositionAndRotation(CameraHandle.position, CameraHandle.rotation);
 			}
+
+			RefreshCameraFieldOfView();
 		}
 
 		private void OnTriggerEnter(Collider other)
@@ -389,6 +406,8 @@ namespace SigilWarAscend.Gameplay
 				_gameManager.NotifyPlayerDied(OwnerPlayerRef, Health.LastDamageDealer);
 			}
 
+			PlayerDeaths++;
+
 			if (Health.LastDamageDealer != PlayerRef.None && Health.LastDamageDealer != OwnerPlayerRef)
 			{
 				var killerObject = Runner.GetPlayerObject(Health.LastDamageDealer);
@@ -407,6 +426,63 @@ namespace SigilWarAscend.Gameplay
 		private void RPC_AwardKill()
 		{
 			PlayerKills++;
+		}
+
+		internal float GetWalkSpeedMultiplier()
+		{
+			return GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.WalkSpeedMultiplier : 1f);
+		}
+
+		internal float GetSprintSpeedMultiplier()
+		{
+			return GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.SprintSpeedMultiplier : 1f);
+		}
+
+		internal float GetJumpMultiplier()
+		{
+			return GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.JumpMultiplier : 1f);
+		}
+
+		internal float GetRotationSpeedMultiplier()
+		{
+			return GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.RotationSpeedMultiplier : 1f);
+		}
+
+		internal float GetAccelerationMultiplier()
+		{
+			return GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.AccelerationMultiplier : 1f);
+		}
+
+		internal int ResolveAttackDamage(int baseDamage)
+		{
+			float multiplier = GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.AttackDamageMultiplier : 1f);
+			return Mathf.Max(1, Mathf.RoundToInt(baseDamage * multiplier));
+		}
+
+		internal float ResolveAttackAnimationDuration(float baseDuration)
+		{
+			float speedMultiplier = GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.AttackAnimationSpeedMultiplier : 1f);
+			return baseDuration / speedMultiplier;
+		}
+
+		internal float ResolveAttackLungeDistance(float baseLungeDistance)
+		{
+			float multiplier = GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.AttackLungeMultiplier : 1f);
+			return baseLungeDistance * multiplier;
+		}
+
+		internal float ResolveAttackMoveSpeedMultiplier(float baseMoveSpeedMultiplier)
+		{
+			float multiplier = GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.AttackMoveSpeedMultiplier : 1f);
+			return Mathf.Max(0f, baseMoveSpeedMultiplier * multiplier);
+		}
+
+		internal void NotifyAttackStarted(int stage)
+		{
+			if (IsLocallyControlled == false)
+				return;
+
+			_localAttackFeedbackTimer = Mathf.Max(_localAttackFeedbackTimer, AttackFeedbackDuration);
 		}
 
 		private bool CanProcessGameplayInput()
@@ -511,6 +587,7 @@ namespace SigilWarAscend.Gameplay
 		{
 			IsJumping = false;
 			ResetTransientGameplayState();
+			_localAttackFeedbackTimer = 0f;
 		}
 
 		private void ResetTransientGameplayState()
@@ -551,6 +628,11 @@ namespace SigilWarAscend.Gameplay
 			{
 				AudioSource.PlayClipAtPoint(PickupAudioClip, KCC.Position, 1f);
 			}
+
+			if (IsLocallyControlled)
+			{
+				_localAttackFeedbackTimer = Mathf.Max(_localAttackFeedbackTimer, AttackFeedbackDuration * 0.6f);
+			}
 		}
 
 		internal void PlayHitReaction()
@@ -562,6 +644,7 @@ namespace SigilWarAscend.Gameplay
 				return;
 
 			Animator.SetTrigger(_animIDHit);
+			_localHitFeedbackTimer = Mathf.Max(_localHitFeedbackTimer, HitFeedbackDuration);
 		}
 
 		internal void StartRespawnCountdown(float respawnDelay)
@@ -597,6 +680,16 @@ namespace SigilWarAscend.Gameplay
 			Nameplate.SetNickname(Nickname);
 		}
 
+		private void OnSelectedCharacterChanged()
+		{
+			SigilWarCharacterRegistry registry = _gameManager != null && _gameManager.CharacterRegistry != null
+				? _gameManager.CharacterRegistry
+				: SigilWarCharacterRegistry.LoadDefault();
+			_resolvedCharacterDefinition = registry != null
+				? registry.ResolveDefinition(SelectedCharacterId)
+				: null;
+		}
+
 		private bool HasAnimatorParameter(string parameterName, AnimatorControllerParameterType expectedType)
 		{
 			if (Animator == null || string.IsNullOrEmpty(parameterName))
@@ -622,6 +715,8 @@ namespace SigilWarAscend.Gameplay
 			AttackDirectionValue = Vector3.zero;
 			AttackVisualStageValue = 0;
 			VisibleAttackVisualCounter = AttackVisualCounterValue;
+			_localHitFeedbackTimer = 0f;
+			_localAttackFeedbackTimer = 0f;
 
 			if (Hitbox != null)
 			{
@@ -654,6 +749,49 @@ namespace SigilWarAscend.Gameplay
 			{
 				healthBars[i].RefreshNow();
 			}
+		}
+
+		private void RefreshCameraFieldOfView()
+		{
+			if (_resolvedMainCamera == null)
+				return;
+
+			float deltaTime = Time.deltaTime;
+			_localAttackFeedbackTimer = Mathf.Max(0f, _localAttackFeedbackTimer - deltaTime);
+			_localHitFeedbackTimer = Mathf.Max(0f, _localHitFeedbackTimer - deltaTime);
+
+			float targetFieldOfView = BaseFieldOfView;
+			if (_resolvedCharacterDefinition != null)
+			{
+				targetFieldOfView += _resolvedCharacterDefinition.CameraFieldOfViewOffset;
+			}
+
+			if (PlayerInput != null && PlayerInput.CurrentInput.Sprint && PlayerInput.CurrentInput.MoveDirection.sqrMagnitude > 0.001f)
+			{
+				targetFieldOfView += SprintFieldOfViewBoost;
+			}
+
+			if (_localAttackFeedbackTimer > 0f)
+			{
+				float normalized = Mathf.Clamp01(_localAttackFeedbackTimer / Mathf.Max(AttackFeedbackDuration, 0.001f));
+				targetFieldOfView += AttackFieldOfViewBoost * normalized;
+			}
+
+			if (_localHitFeedbackTimer > 0f)
+			{
+				float normalized = Mathf.Clamp01(_localHitFeedbackTimer / Mathf.Max(HitFeedbackDuration, 0.001f));
+				targetFieldOfView -= HitFieldOfViewPenalty * normalized;
+			}
+
+			_resolvedMainCamera.fieldOfView = Mathf.Lerp(
+				_resolvedMainCamera.fieldOfView,
+				targetFieldOfView,
+				FieldOfViewLerpSpeed * deltaTime);
+		}
+
+		private static float GetPositiveCharacterMultiplier(float value)
+		{
+			return value > 0f ? value : 1f;
 		}
 	}
 }

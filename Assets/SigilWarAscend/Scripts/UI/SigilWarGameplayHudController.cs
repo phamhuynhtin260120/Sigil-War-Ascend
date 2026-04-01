@@ -46,9 +46,23 @@ namespace SigilWarAscend.UI
 				return;
 			}
 
+			if (_gameManager.IsReadyUpActive)
+			{
+				SetVisible(false);
+				SetRespawnOverlayVisible(false);
+				return;
+			}
+
 			bool canReadLocalPlayer = CanReadPlayerState(_localPlayer);
+			if (canReadLocalPlayer == false)
+			{
+				SetVisible(false);
+				SetRespawnOverlayVisible(false);
+				return;
+			}
+
 			bool showRespawnOverlay = canReadLocalPlayer && _localPlayer.IsAlive == false && _localPlayer.IsRespawnPending;
-			bool showSceneUi = canReadLocalPlayer == false || showRespawnOverlay == false;
+			bool showSceneUi = showRespawnOverlay == false;
 
 			SetVisible(showSceneUi);
 			SetRespawnOverlayVisible(showRespawnOverlay);
