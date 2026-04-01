@@ -25,14 +25,14 @@ namespace SigilWarAscend.Gameplay
 		[Header("Attack")]
 		public SigilWarAttackStage[] AttackStages =
 		{
-			new SigilWarAttackStage { TriggerParameter = "Attack1", Damage = 15, AnimationDuration = 1.63f, LungeDistance = 0.55f, MoveSpeedMultiplier = 0.22f, LungeStartTime = 0.10f, LungeEndTime = 0.28f, ComboBufferOpenTime = 0.25f, ComboBufferCloseTime = 1.50f, VfxSlot = 0 },
-			new SigilWarAttackStage { TriggerParameter = "Attack2", Damage = 20, AnimationDuration = 1.88f, LungeDistance = 0.40f, MoveSpeedMultiplier = 0.16f, LungeStartTime = 0.18f, LungeEndTime = 0.40f, ComboBufferOpenTime = 0.30f, ComboBufferCloseTime = 1.75f, VfxSlot = 1 },
-			new SigilWarAttackStage { TriggerParameter = "Attack3", Damage = 30, AnimationDuration = 1.87f, LungeDistance = 0.50f, MoveSpeedMultiplier = 0.10f, LungeStartTime = 0.12f, LungeEndTime = 0.36f, ComboBufferOpenTime = 0f, ComboBufferCloseTime = 0f, VfxSlot = 2 },
+			new SigilWarAttackStage { TriggerParameter = "Attack1", Damage = 15, AnimationDuration = 0.90f, LungeDistance = 0.80f, MoveSpeedMultiplier = 0.34f, LungeStartTime = 0.08f, LungeEndTime = 0.24f, ComboBufferOpenTime = 0.34f, ComboBufferCloseTime = 0.78f, VfxSlot = 0 },
+			new SigilWarAttackStage { TriggerParameter = "Attack2", Damage = 20, AnimationDuration = 1.00f, LungeDistance = 0.62f, MoveSpeedMultiplier = 0.26f, LungeStartTime = 0.11f, LungeEndTime = 0.30f, ComboBufferOpenTime = 0.40f, ComboBufferCloseTime = 0.86f, VfxSlot = 1 },
+			new SigilWarAttackStage { TriggerParameter = "Attack3", Damage = 30, AnimationDuration = 1.12f, LungeDistance = 0.92f, MoveSpeedMultiplier = 0.08f, LungeStartTime = 0.16f, LungeEndTime = 0.42f, ComboBufferOpenTime = 0f, ComboBufferCloseTime = 0f, VfxSlot = 2 },
 		};
-		public float ComboResetDelay = 0.8f;
-		public float ComboBufferGraceTime = 0.06f;
+		public float ComboResetDelay = 0.48f;
+		public float ComboBufferGraceTime = 0.10f;
 		[Tooltip("Fallback timeout if an attack animation is missing its end event.")]
-		public float AttackAnimationSafetyTimeout = 2.5f;
+		public float AttackAnimationSafetyTimeout = 1.35f;
 
 		public void ResetState(SigilWarPlayer player)
 		{
@@ -87,20 +87,7 @@ namespace SigilWarAscend.Gameplay
 				return Vector3.zero;
 
 			SigilWarAttackStage attackStage = GetAttackStage(player.AttackStageValue);
-			float animationDuration = player.ResolveAttackAnimationDuration(attackStage.AnimationDuration);
-			float lungeDistance = player.ResolveAttackLungeDistance(attackStage.LungeDistance);
-			if (animationDuration <= 0f || lungeDistance <= 0f)
-				return Vector3.zero;
-
-			if (player.AttackStageTimerValue.IsRunning == false || player.AttackStageTimerValue.Expired(player.Runner))
-				return Vector3.zero;
-
-			float elapsed = GetStageElapsedTime(player, attackStage);
-			if (elapsed < attackStage.LungeStartTime || elapsed > attackStage.LungeEndTime)
-				return Vector3.zero;
-
-			float lungeDuration = Mathf.Max(0.01f, attackStage.LungeEndTime - attackStage.LungeStartTime);
-			return player.AttackDirectionValue * (lungeDistance / lungeDuration);
+			return player.AttackMotion != null ? player.AttackMotion.GetAttackVelocity(attackStage) : Vector3.zero;
 		}
 
 		public int GetVfxSlotForStage(int stage)
@@ -114,7 +101,7 @@ namespace SigilWarAscend.Gameplay
 				return 0f;
 
 			SigilWarAttackStage attackStage = GetAttackStage(player.AttackStageValue);
-			return player.ResolveAttackMoveSpeedMultiplier(attackStage.MoveSpeedMultiplier);
+			return player.AttackMotion != null ? player.AttackMotion.GetAttackMoveSpeedMultiplier(attackStage) : 0f;
 		}
 
 		public void CompleteCurrentAttackStage(SigilWarPlayer player)
@@ -290,9 +277,13 @@ namespace SigilWarAscend.Gameplay
 
 		private static float GetStageElapsedTime(SigilWarPlayer player, SigilWarAttackStage attackStage)
 		{
+			if (player.AttackMotion != null)
+			{
+				return player.AttackMotion.GetStageElapsedTime(attackStage, player.AttackStageTimerValue, player.Runner);
+			}
+
 			float remainingTime = player.AttackStageTimerValue.RemainingTime(player.Runner) ?? 0f;
-			float animationDuration = player.ResolveAttackAnimationDuration(attackStage.AnimationDuration);
-			return Mathf.Max(0f, animationDuration - remainingTime);
+			return Mathf.Max(0f, attackStage.AnimationDuration - remainingTime);
 		}
 
 		private void TriggerBufferedStage(SigilWarPlayer player, int stage)

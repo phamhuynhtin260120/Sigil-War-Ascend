@@ -66,7 +66,7 @@ namespace SigilWarAscend.Gameplay
 			Vector3 moveDirection = lookRotation * new Vector3(input.MoveDirection.x, 0f, input.MoveDirection.y);
 			Vector3 desiredMoveVelocity = moveDirection * speed;
 
-			if (player.HasStateAuthority && player.Combat != null && CanConsumeBufferedAttack(kcc.IsGrounded))
+			if (player.HasStateAuthority && player.IsCombatEnabled && CanConsumeBufferedAttack(kcc.IsGrounded))
 			{
 				player.Combat.TryStartAttack(player, input);
 				_attackBufferTimer = player.IsAttackActive ? 0f : _attackBufferTimer;
@@ -75,7 +75,7 @@ namespace SigilWarAscend.Gameplay
 			float acceleration;
 			if (player.IsAttackActive)
 			{
-				float attackMoveSpeedMultiplier = player.Combat != null
+				float attackMoveSpeedMultiplier = player.IsCombatEnabled
 					? player.Combat.GetAttackMoveSpeedMultiplier(player)
 					: 0f;
 				desiredMoveVelocity *= attackMoveSpeedMultiplier;
@@ -110,7 +110,7 @@ namespace SigilWarAscend.Gameplay
 				_moveVelocity = projectedVector;
 			}
 
-			Vector3 attackVelocity = player.Combat != null ? player.Combat.GetAttackVelocity(player) : Vector3.zero;
+			Vector3 attackVelocity = player.IsCombatEnabled ? player.Combat.GetAttackVelocity(player) : Vector3.zero;
 			kcc.Move(_moveVelocity + attackVelocity, jumpImpulse);
 		}
 

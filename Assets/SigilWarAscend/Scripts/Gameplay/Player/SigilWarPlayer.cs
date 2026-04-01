@@ -25,6 +25,13 @@ namespace SigilWarAscend.Gameplay
 		public SigilWarPlayerMovement Movement;
 		public SigilWarPlayerCombat Combat;
 		public SigilWarPlayerVfx Vfx;
+		public SigilWarPlayerCharacterStats CharacterStats;
+		public SigilWarPlayerCameraController CameraController;
+		public SigilWarPlayerPresentation Presentation;
+		public SigilWarPlayerAttackMotion AttackMotion;
+
+		[Header("Testing")]
+		public bool DisableCombatForTesting;
 
 		[Header("Sounds")]
 		public AudioSource FootstepSound;
@@ -79,17 +86,6 @@ namespace SigilWarAscend.Gameplay
 		private SigilWarGameManager _gameManager;
 		private bool _deathReported;
 		private int _visibleAttackVisualCounter;
-		private int _animIDSpeed;
-		private int _animIDGrounded;
-		private int _animIDJump;
-		private int _animIDFreeFall;
-		private int _animIDMotionSpeed;
-		private int _animIDDead;
-		private int _animIDHit;
-		private Camera _resolvedMainCamera;
-		private SigilWarCharacterDefinition _resolvedCharacterDefinition;
-		private float _localAttackFeedbackTimer;
-		private float _localHitFeedbackTimer;
 
 		public PlayerRef OwnerPlayerRef => Object != null ? Object.StateAuthority : PlayerRef.None;
 		public bool IsAlive => Health != null && Health.IsAlive;
@@ -100,6 +96,8 @@ namespace SigilWarAscend.Gameplay
 		public bool IsRespawnPending => IsWaitingForRespawn;
 		public float RemainingRespawnTime => Runner != null && IsWaitingForRespawn ? Mathf.Max(0f, RespawnTimer.RemainingTime(Runner) ?? 0f) : 0f;
 		internal bool IsLocallyControlled => Object != null && (HasInputAuthority || HasStateAuthority);
+		internal bool IsCombatEnabled => DisableCombatForTesting == false && Combat != null;
+		internal SigilWarGameManager GameManager => _gameManager;
 
 		internal bool IsAttackActive
 		{
@@ -163,14 +161,13 @@ namespace SigilWarAscend.Gameplay
 
 		private void Awake()
 		{
-			AssignAnimationIDs();
 			EnsurePlayerComponents();
 		}
 
 		public override void Spawned()
 		{
 			EnsurePlayerComponents();
-			TryResolveMainCamera(forceRefresh: true);
+			CameraController?.ForceRefreshCamera();
 
 			if (IsLocallyControlled)
 			{
@@ -203,7 +200,10 @@ namespace SigilWarAscend.Gameplay
 			if (HasStateAuthority && Health != null)
 			{
 				ProcessDeathState();
-				Combat?.TickStateAuthority(this);
+				if (IsCombatEnabled)
+				{
+					Combat.TickStateAuthority(this);
+				}
 			}
 
 			bool canRunMovement = Health != null && Health.IsAlive;
@@ -235,33 +235,7 @@ namespace SigilWarAscend.Gameplay
 
 		public override void Render()
 		{
-			if (Animator != null && KCC != null)
-			{
-				Animator.SetFloat(_animIDSpeed, KCC.RealSpeed, 0.15f, Time.deltaTime);
-				Animator.SetFloat(_animIDMotionSpeed, 1f);
-				Animator.SetBool(_animIDJump, IsJumping);
-				Animator.SetBool(_animIDGrounded, KCC.IsGrounded);
-				Animator.SetBool(_animIDFreeFall, KCC.RealVelocity.y < -10f);
-				Animator.SetBool(_animIDDead, Health != null && Health.IsAlive == false);
-			}
-
-			if (FootstepSound != null && KCC != null)
-			{
-				FootstepSound.enabled = Health != null && Health.IsAlive && KCC.IsGrounded && KCC.RealSpeed > 1f;
-				float sprintSpeed = Movement != null ? Movement.SprintSpeed : 5f;
-				FootstepSound.pitch = KCC.RealSpeed > sprintSpeed - 1f ? 1.5f : 1f;
-			}
-
-			if (DustParticles != null && KCC != null)
-			{
-				var emission = DustParticles.emission;
-				emission.enabled = Health != null && Health.IsAlive && KCC.IsGrounded && KCC.RealSpeed > 1f;
-			}
-
-			if (Hitbox != null && Health != null)
-			{
-				Hitbox.enabled = Health.IsAlive;
-			}
+			Presentation?.Render();
 		}
 
 		private void LateUpdate()
@@ -272,19 +246,7 @@ namespace SigilWarAscend.Gameplay
 			if (CanOwnCamera() == false)
 				return;
 
-			TryResolveMainCamera(forceRefresh: false);
-
-			if (CameraPivot != null)
-			{
-				CameraPivot.rotation = Quaternion.Euler(PlayerInput.CurrentInput.LookRotation);
-			}
-
-			if (_resolvedMainCamera != null && CameraHandle != null)
-			{
-				_resolvedMainCamera.transform.SetPositionAndRotation(CameraHandle.position, CameraHandle.rotation);
-			}
-
-			RefreshCameraFieldOfView();
+			CameraController?.TickLateUpdate();
 		}
 
 		private void OnTriggerEnter(Collider other)
@@ -362,19 +324,28 @@ namespace SigilWarAscend.Gameplay
 		public void PlayCurrentAttackVfxAndOpenDamageWindow()
 		{
 			PlayCurrentAttackVfx();
-			Combat?.OpenCurrentDamageWindow(this);
+			if (IsCombatEnabled)
+			{
+				Combat.OpenCurrentDamageWindow(this);
+			}
 		}
 
 		// Animation Event helper. Use this when the impact frame is separate from the VFX frame.
 		public void OpenCurrentAttackDamageWindow()
 		{
-			Combat?.OpenCurrentDamageWindow(this);
+			if (IsCombatEnabled)
+			{
+				Combat.OpenCurrentDamageWindow(this);
+			}
 		}
 
 		// Animation Event helper. Closes any active attack hitbox after the damage window ends.
 		public void CloseAttackDamageWindow()
 		{
-			Combat?.CloseAllDamageWindows();
+			if (IsCombatEnabled)
+			{
+				Combat.CloseAllDamageWindows();
+			}
 		}
 
 		// Animation Event helper. Attack stage only ends when the clip says it is finished.
@@ -383,8 +354,11 @@ namespace SigilWarAscend.Gameplay
 			if (Object != null && HasStateAuthority == false)
 				return;
 
-			Combat?.CloseAllDamageWindows();
-			Combat?.CompleteCurrentAttackStage(this);
+			if (IsCombatEnabled)
+			{
+				Combat.CloseAllDamageWindows();
+				Combat.CompleteCurrentAttackStage(this);
+			}
 		}
 
 		private void ProcessDeathState()
@@ -430,59 +404,52 @@ namespace SigilWarAscend.Gameplay
 
 		internal float GetWalkSpeedMultiplier()
 		{
-			return GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.WalkSpeedMultiplier : 1f);
+			return CharacterStats != null ? CharacterStats.GetWalkSpeedMultiplier() : 1f;
 		}
 
 		internal float GetSprintSpeedMultiplier()
 		{
-			return GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.SprintSpeedMultiplier : 1f);
+			return CharacterStats != null ? CharacterStats.GetSprintSpeedMultiplier() : 1f;
 		}
 
 		internal float GetJumpMultiplier()
 		{
-			return GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.JumpMultiplier : 1f);
+			return CharacterStats != null ? CharacterStats.GetJumpMultiplier() : 1f;
 		}
 
 		internal float GetRotationSpeedMultiplier()
 		{
-			return GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.RotationSpeedMultiplier : 1f);
+			return CharacterStats != null ? CharacterStats.GetRotationSpeedMultiplier() : 1f;
 		}
 
 		internal float GetAccelerationMultiplier()
 		{
-			return GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.AccelerationMultiplier : 1f);
+			return CharacterStats != null ? CharacterStats.GetAccelerationMultiplier() : 1f;
 		}
 
 		internal int ResolveAttackDamage(int baseDamage)
 		{
-			float multiplier = GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.AttackDamageMultiplier : 1f);
-			return Mathf.Max(1, Mathf.RoundToInt(baseDamage * multiplier));
+			return CharacterStats != null ? CharacterStats.ResolveAttackDamage(baseDamage) : Mathf.Max(1, baseDamage);
 		}
 
 		internal float ResolveAttackAnimationDuration(float baseDuration)
 		{
-			float speedMultiplier = GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.AttackAnimationSpeedMultiplier : 1f);
-			return baseDuration / speedMultiplier;
+			return CharacterStats != null ? CharacterStats.ResolveAttackAnimationDuration(baseDuration) : baseDuration;
 		}
 
 		internal float ResolveAttackLungeDistance(float baseLungeDistance)
 		{
-			float multiplier = GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.AttackLungeMultiplier : 1f);
-			return baseLungeDistance * multiplier;
+			return CharacterStats != null ? CharacterStats.ResolveAttackLungeDistance(baseLungeDistance) : baseLungeDistance;
 		}
 
 		internal float ResolveAttackMoveSpeedMultiplier(float baseMoveSpeedMultiplier)
 		{
-			float multiplier = GetPositiveCharacterMultiplier(_resolvedCharacterDefinition != null ? _resolvedCharacterDefinition.AttackMoveSpeedMultiplier : 1f);
-			return Mathf.Max(0f, baseMoveSpeedMultiplier * multiplier);
+			return CharacterStats != null ? CharacterStats.ResolveAttackMoveSpeedMultiplier(baseMoveSpeedMultiplier) : Mathf.Max(0f, baseMoveSpeedMultiplier);
 		}
 
 		internal void NotifyAttackStarted(int stage)
 		{
-			if (IsLocallyControlled == false)
-				return;
-
-			_localAttackFeedbackTimer = Mathf.Max(_localAttackFeedbackTimer, AttackFeedbackDuration);
+			CameraController?.NotifyAttackStarted();
 		}
 
 		private bool CanProcessGameplayInput()
@@ -505,7 +472,7 @@ namespace SigilWarAscend.Gameplay
 			return Cursor.lockState == CursorLockMode.Locked;
 		}
 
-		private bool CanOwnCamera()
+		internal bool CanOwnLocalCamera()
 		{
 			if (IsLocallyControlled == false)
 				return false;
@@ -522,30 +489,9 @@ namespace SigilWarAscend.Gameplay
 			return true;
 		}
 
-		private void TryResolveMainCamera(bool forceRefresh)
+		private bool CanOwnCamera()
 		{
-			if (forceRefresh == false && _resolvedMainCamera != null && _resolvedMainCamera.isActiveAndEnabled)
-				return;
-
-			_resolvedMainCamera = Camera.main;
-			if (_resolvedMainCamera == null)
-			{
-				_resolvedMainCamera = FindFirstObjectByType<Camera>();
-			}
-		}
-
-		private void AssignAnimationIDs()
-		{
-			if (Animator == null)
-				return;
-
-			_animIDSpeed = Animator.StringToHash("Speed");
-			_animIDGrounded = Animator.StringToHash("Grounded");
-			_animIDJump = Animator.StringToHash("Jump");
-			_animIDFreeFall = Animator.StringToHash("FreeFall");
-			_animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
-			_animIDDead = Animator.StringToHash("Dead");
-			_animIDHit = Animator.StringToHash("Hit");
+			return CanOwnLocalCamera();
 		}
 
 		private void EnsurePlayerComponents()
@@ -581,70 +527,101 @@ namespace SigilWarAscend.Gameplay
 			{
 				Vfx.Player = this;
 			}
+
+			if (CharacterStats == null)
+			{
+				CharacterStats = GetComponent<SigilWarPlayerCharacterStats>();
+				if (CharacterStats == null)
+				{
+					CharacterStats = gameObject.AddComponent<SigilWarPlayerCharacterStats>();
+				}
+			}
+
+			if (CameraController == null)
+			{
+				CameraController = GetComponent<SigilWarPlayerCameraController>();
+				if (CameraController == null)
+				{
+					CameraController = gameObject.AddComponent<SigilWarPlayerCameraController>();
+				}
+			}
+
+			if (Presentation == null)
+			{
+				Presentation = GetComponent<SigilWarPlayerPresentation>();
+				if (Presentation == null)
+				{
+					Presentation = gameObject.AddComponent<SigilWarPlayerPresentation>();
+				}
+			}
+
+			if (AttackMotion == null)
+			{
+				AttackMotion = GetComponent<SigilWarPlayerAttackMotion>();
+				if (AttackMotion == null)
+				{
+					AttackMotion = gameObject.AddComponent<SigilWarPlayerAttackMotion>();
+				}
+			}
+
+			if (CharacterStats != null && CharacterStats.Player == null)
+			{
+				CharacterStats.Player = this;
+			}
+
+			if (CameraController != null && CameraController.Player == null)
+			{
+				CameraController.Player = this;
+			}
+
+			if (Presentation != null && Presentation.Player == null)
+			{
+				Presentation.Player = this;
+			}
+
+			if (AttackMotion != null && AttackMotion.Player == null)
+			{
+				AttackMotion.Player = this;
+			}
 		}
 
 		private void ResetGameplayStateOnDeath()
 		{
 			IsJumping = false;
 			ResetTransientGameplayState();
-			_localAttackFeedbackTimer = 0f;
+			CameraController?.ResetFeedback();
 		}
 
 		private void ResetTransientGameplayState()
 		{
 			Movement?.ResetState();
-			Combat?.ResetState(this);
+			if (IsCombatEnabled)
+			{
+				Combat.ResetState(this);
+			}
 		}
 
 		private void OnAttackVisualChanged()
 		{
-			Combat?.ApplyVisualTrigger(this);
+			if (IsCombatEnabled)
+			{
+				Combat.ApplyVisualTrigger(this);
+			}
 		}
 
 		private void OnJumpingChanged()
 		{
-			if (IsJumping)
-			{
-				if (JumpAudioClip != null && KCC != null)
-				{
-					AudioSource.PlayClipAtPoint(JumpAudioClip, KCC.Position, 1f);
-				}
-			}
-			else
-			{
-				if (LandAudioClip != null && KCC != null)
-				{
-					AudioSource.PlayClipAtPoint(LandAudioClip, KCC.Position, 1f);
-				}
-			}
+			Presentation?.OnJumpingChanged();
 		}
 
 		private void OnCollectedPickupsChanged()
 		{
-			if (CollectedPickups <= 0)
-				return;
-
-			if (PickupAudioClip != null && KCC != null)
-			{
-				AudioSource.PlayClipAtPoint(PickupAudioClip, KCC.Position, 1f);
-			}
-
-			if (IsLocallyControlled)
-			{
-				_localAttackFeedbackTimer = Mathf.Max(_localAttackFeedbackTimer, AttackFeedbackDuration * 0.6f);
-			}
+			Presentation?.OnCollectedPickupsChanged();
 		}
 
 		internal void PlayHitReaction()
 		{
-			if (Animator == null || Health == null || Health.IsAlive == false)
-				return;
-
-			if (HasAnimatorParameter("Hit", AnimatorControllerParameterType.Trigger) == false)
-				return;
-
-			Animator.SetTrigger(_animIDHit);
-			_localHitFeedbackTimer = Mathf.Max(_localHitFeedbackTimer, HitFeedbackDuration);
+			Presentation?.PlayHitReaction();
 		}
 
 		internal void StartRespawnCountdown(float respawnDelay)
@@ -667,41 +644,12 @@ namespace SigilWarAscend.Gameplay
 
 		private void OnNicknameChanged()
 		{
-			if (Nameplate == null)
-				return;
-
-			if (IsLocallyControlled)
-			{
-				Nameplate.enabled = false;
-				return;
-			}
-
-			Nameplate.enabled = true;
-			Nameplate.SetNickname(Nickname);
+			Presentation?.OnNicknameChanged();
 		}
 
 		private void OnSelectedCharacterChanged()
 		{
-			SigilWarCharacterRegistry registry = _gameManager != null && _gameManager.CharacterRegistry != null
-				? _gameManager.CharacterRegistry
-				: SigilWarCharacterRegistry.LoadDefault();
-			_resolvedCharacterDefinition = registry != null
-				? registry.ResolveDefinition(SelectedCharacterId)
-				: null;
-		}
-
-		private bool HasAnimatorParameter(string parameterName, AnimatorControllerParameterType expectedType)
-		{
-			if (Animator == null || string.IsNullOrEmpty(parameterName))
-				return false;
-
-			foreach (var parameter in Animator.parameters)
-			{
-				if (parameter.name == parameterName && parameter.type == expectedType)
-					return true;
-			}
-
-			return false;
+			CharacterStats?.RefreshSelectedCharacter();
 		}
 
 		private void ResetPresentationStateOnRespawn()
@@ -715,83 +663,8 @@ namespace SigilWarAscend.Gameplay
 			AttackDirectionValue = Vector3.zero;
 			AttackVisualStageValue = 0;
 			VisibleAttackVisualCounter = AttackVisualCounterValue;
-			_localHitFeedbackTimer = 0f;
-			_localAttackFeedbackTimer = 0f;
-
-			if (Hitbox != null)
-			{
-				Hitbox.enabled = Health != null && Health.IsAlive;
-			}
-
-			if (Animator != null)
-			{
-				Animator.Rebind();
-				Animator.Update(0f);
-				Animator.SetBool(_animIDDead, false);
-				Animator.SetBool(_animIDJump, false);
-				Animator.SetBool(_animIDFreeFall, false);
-			}
-
-			if (DustParticles != null)
-			{
-				DustParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-			}
-
-			if (FootstepSound != null)
-			{
-				FootstepSound.Stop();
-			}
-
-			OnNicknameChanged();
-
-			SigilWarHealthBar[] healthBars = GetComponentsInChildren<SigilWarHealthBar>(true);
-			for (int i = 0; i < healthBars.Length; i++)
-			{
-				healthBars[i].RefreshNow();
-			}
-		}
-
-		private void RefreshCameraFieldOfView()
-		{
-			if (_resolvedMainCamera == null)
-				return;
-
-			float deltaTime = Time.deltaTime;
-			_localAttackFeedbackTimer = Mathf.Max(0f, _localAttackFeedbackTimer - deltaTime);
-			_localHitFeedbackTimer = Mathf.Max(0f, _localHitFeedbackTimer - deltaTime);
-
-			float targetFieldOfView = BaseFieldOfView;
-			if (_resolvedCharacterDefinition != null)
-			{
-				targetFieldOfView += _resolvedCharacterDefinition.CameraFieldOfViewOffset;
-			}
-
-			if (PlayerInput != null && PlayerInput.CurrentInput.Sprint && PlayerInput.CurrentInput.MoveDirection.sqrMagnitude > 0.001f)
-			{
-				targetFieldOfView += SprintFieldOfViewBoost;
-			}
-
-			if (_localAttackFeedbackTimer > 0f)
-			{
-				float normalized = Mathf.Clamp01(_localAttackFeedbackTimer / Mathf.Max(AttackFeedbackDuration, 0.001f));
-				targetFieldOfView += AttackFieldOfViewBoost * normalized;
-			}
-
-			if (_localHitFeedbackTimer > 0f)
-			{
-				float normalized = Mathf.Clamp01(_localHitFeedbackTimer / Mathf.Max(HitFeedbackDuration, 0.001f));
-				targetFieldOfView -= HitFieldOfViewPenalty * normalized;
-			}
-
-			_resolvedMainCamera.fieldOfView = Mathf.Lerp(
-				_resolvedMainCamera.fieldOfView,
-				targetFieldOfView,
-				FieldOfViewLerpSpeed * deltaTime);
-		}
-
-		private static float GetPositiveCharacterMultiplier(float value)
-		{
-			return value > 0f ? value : 1f;
+			CameraController?.ResetFeedback();
+			Presentation?.ResetOnRespawn();
 		}
 	}
 }
